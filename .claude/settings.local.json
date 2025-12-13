@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter --version:*)",
+      "Bash(tree:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(timeout 120 flutter pub:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(find:*)",
+      "Bash(flutter pub run build_runner build:*)",
+      "Bash(ls:*)",
+      "Bash(flutter test:*)",
+      "Bash(flutter doctor:*)"
+    ]
+  }
+}

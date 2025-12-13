@@ -1,0 +1,177 @@
+import 'package:cadastro_beneficios/core/network/dio_client.dart';
+import 'package:cadastro_beneficios/core/network/api_endpoints.dart';
+import 'package:cadastro_beneficios/data/models/auth_token_model.dart';
+import 'package:cadastro_beneficios/data/models/user_model.dart';
+import 'package:cadastro_beneficios/domain/repositories/auth_repository.dart';
+
+/// DataSource remoto para autenticação
+///
+/// Responsável por toda comunicação com API de autenticação
+abstract class AuthRemoteDataSource {
+  Future<AuthTokenModel> loginWithEmail({
+    required String email,
+    required String password,
+  });
+
+  Future<AuthTokenModel> loginWithGoogle({required String idToken});
+
+  Future<AuthTokenModel> register({
+    required String name,
+    required String email,
+    required String password,
+    required String phoneNumber,
+    String? cpf,
+  });
+
+  Future<void> logout();
+
+  Future<void> forgotPassword({required String email});
+
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  });
+
+  Future<AuthTokenModel> refreshToken({required String refreshToken});
+
+  Future<UserModel> getCurrentUser();
+
+  Future<void> sendVerificationCode({
+    required String phoneNumber,
+    required VerificationMethod method,
+  });
+
+  Future<void> verifyCode({
+    required String phoneNumber,
+    required String code,
+  });
+}
+
+/// Implementação do AuthRemoteDataSource
+class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
+  final DioClient _dioClient;
+
+  AuthRemoteDataSourceImpl(this._dioClient);
+
+  @override
+  Future<AuthTokenModel> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.login,
+      data: {
+        'email': email,
+        'password': password,
+      },
+    );
+
+    return AuthTokenModel.fromJson(response.data);
+  }
+
+  @override
+  Future<AuthTokenModel> loginWithGoogle({required String idToken}) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.loginGoogle,
+      data: {
+        'id_token': idToken,
+      },
+    );
+
+    return AuthTokenModel.fromJson(response.data);
+  }
+
+  @override
+  Future<AuthTokenModel> register({
+    required String name,
+    required String email,
+    required String password,
+    required String phoneNumber,
+    String? cpf,
+  }) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.register,
+      data: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'phone_number': phoneNumber,
+        if (cpf != null) 'cpf': cpf,
+      },
+    );
+
+    return AuthTokenModel.fromJson(response.data);
+  }
+
+  @override
+  Future<void> logout() async {
+    await _dioClient.post(ApiEndpoints.logout);
+  }
+
+  @override
+  Future<void> forgotPassword({required String email}) async {
+    await _dioClient.post(
+      ApiEndpoints.forgotPassword,
+      data: {'email': email},
+    );
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    await _dioClient.post(
+      ApiEndpoints.resetPassword,
+      data: {
+        'token': token,
+        'password': newPassword,
+      },
+    );
+  }
+
+  @override
+  Future<AuthTokenModel> refreshToken({required String refreshToken}) async {
+    final response = await _dioClient.post(
+      ApiEndpoints.refreshToken,
+      data: {'refresh_token': refreshToken},
+    );
+
+    return AuthTokenModel.fromJson(response.data);
+  }
+
+  @override
+  Future<UserModel> getCurrentUser() async {
+    final response = await _dioClient.get(ApiEndpoints.me);
+
+    return UserModel.fromJson(response.data);
+  }
+
+  @override
+  Future<void> sendVerificationCode({
+    required String phoneNumber,
+    required VerificationMethod method,
+  }) async {
+    await _dioClient.post(
+      ApiEndpoints.sendVerificationCode,
+      data: {
+        'phone_number': phoneNumber,
+        'method': method == VerificationMethod.sms ? 'sms' : 'whatsapp',
+      },
+    );
+  }
+
+  @override
+  Future<void> verifyCode({
+    required String phoneNumber,
+    required String code,
+  }) async {
+    await _dioClient.post(
+      ApiEndpoints.verifyCode,
+      data: {
+        'phone_number': phoneNumber,
+        'code': code,
+      },
+    );
+  }
+}
