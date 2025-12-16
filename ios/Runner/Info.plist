@@ -13,7 +13,21 @@
 				<string>com.googleusercontent.apps.403775802042-dr9hvctbr6qfildd767us0o057m3iu3m</string>
 			</array>
 		</dict>
+		<!-- Deep linking custom scheme -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.example.cadastrobeneficios</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>cadastrobeneficios</string>
+			</array>
+		</dict>
 	</array>
+	<!-- Universal Links (App Links) -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
 	<!-- Google Sign In Configuration -->
 	<key>GIDClientID</key>
 	<string>403775802042-dr9hvctbr6qfildd767us0o057m3iu3m.apps.googleusercontent.com</string>

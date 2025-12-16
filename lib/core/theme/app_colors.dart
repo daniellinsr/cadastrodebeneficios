@@ -18,6 +18,9 @@ class AppColors {
   // WhatsApp
   static const Color whatsapp = Color(0xFF25D366);
 
+  // Accent colors
+  static const Color accentOrange = Color(0xFFFF6B35);
+
   // Tons de cinza (gray scale)
   static const Color gray50 = Color(0xFFFAFAFA);
   static const Color gray100 = Color(0xFFF5F5F5);

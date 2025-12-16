@@ -6,13 +6,17 @@
 import 'dart:async' as _i5;
 
 import 'package:cadastro_beneficios/core/network/dio_client.dart' as _i4;
+import 'package:cadastro_beneficios/core/services/google_auth_service.dart'
+    as _i9;
 import 'package:cadastro_beneficios/data/datasources/auth_local_datasource.dart'
     as _i7;
 import 'package:cadastro_beneficios/data/models/user_model.dart' as _i8;
 import 'package:dio/dio.dart' as _i2;
 import 'package:flutter/foundation.dart' as _i6;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i3;
+import 'package:google_sign_in/google_sign_in.dart' as _i11;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i10;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -621,6 +625,69 @@ class MockAuthLocalDataSource extends _i1.Mock
   _i5.Future<void> clearCache() => (super.noSuchMethod(
         Invocation.method(
           #clearCache,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+}
+
+/// A class which mocks [GoogleAuthService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGoogleAuthService extends _i1.Mock implements _i9.GoogleAuthService {
+  MockGoogleAuthService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<String> signIn() => (super.noSuchMethod(
+        Invocation.method(
+          #signIn,
+          [],
+        ),
+        returnValue: _i5.Future<String>.value(_i10.dummyValue<String>(
+          this,
+          Invocation.method(
+            #signIn,
+            [],
+          ),
+        )),
+      ) as _i5.Future<String>);
+
+  @override
+  _i5.Future<void> signOut() => (super.noSuchMethod(
+        Invocation.method(
+          #signOut,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<bool> isSignedIn() => (super.noSuchMethod(
+        Invocation.method(
+          #isSignedIn,
+          [],
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
+  _i5.Future<_i11.GoogleSignInAccount?> getCurrentAccount() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCurrentAccount,
+          [],
+        ),
+        returnValue: _i5.Future<_i11.GoogleSignInAccount?>.value(),
+      ) as _i5.Future<_i11.GoogleSignInAccount?>);
+
+  @override
+  _i5.Future<void> disconnect() => (super.noSuchMethod(
+        Invocation.method(
+          #disconnect,
           [],
         ),
         returnValue: _i5.Future<void>.value(),

@@ -10,7 +10,18 @@
       "Bash(flutter pub run build_runner build:*)",
       "Bash(ls:*)",
       "Bash(flutter test:*)",
-      "Bash(flutter doctor:*)"
+      "Bash(flutter doctor:*)",
+      "Bash(dart run build_runner build:*)",
+      "Bash(mkdir:*)",
+      "Bash(psql:*)",
+      "Bash(node test-connection.js:*)",
+      "Bash(node:*)",
+      "Bash(\"C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe\" -h 77.37.41.41 -U cadastro_user -p 5411 -d cadastro_db -c \"\\d users\")",
+      "Bash(\"C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe\" -h 77.37.41.41 -U cadastro_user -p 5411 -d cadastro_db -c \"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ''users'' ORDER BY ordinal_position;\")",
+      "Bash(timeout /t 5)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(flutter run:*)"
     ]
   }
 }

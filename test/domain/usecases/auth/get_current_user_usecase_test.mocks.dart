@@ -73,11 +73,13 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
       ) as _i4.Future<_i2.Either<_i5.Failure, _i6.AuthToken>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, _i6.AuthToken>> loginWithGoogle() =>
+  _i4.Future<_i2.Either<_i5.Failure, _i6.AuthToken>> loginWithGoogle(
+          {required String? idToken}) =>
       (super.noSuchMethod(
         Invocation.method(
           #loginWithGoogle,
           [],
+          {#idToken: idToken},
         ),
         returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.AuthToken>>.value(
             _FakeEither_0<_i5.Failure, _i6.AuthToken>(
@@ -85,6 +87,7 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
           Invocation.method(
             #loginWithGoogle,
             [],
+            {#idToken: idToken},
           ),
         )),
       ) as _i4.Future<_i2.Either<_i5.Failure, _i6.AuthToken>>);

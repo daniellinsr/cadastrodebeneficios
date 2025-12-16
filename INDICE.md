@@ -121,6 +121,10 @@ cadastrodebeneficios/
 ### 🗄️ Banco de Dados
 | Tópico | Documento | Seção |
 |--------|-----------|-------|
+| **Setup PostgreSQL** | **[DATABASE_SETUP.md](DATABASE_SETUP.md)** | **Guia Completo** |
+| **QuickStart** | **[DATABASE_QUICKSTART.md](DATABASE_QUICKSTART.md)** | **Início Rápido** |
+| **Resumo** | **[DATABASE_SUMMARY.md](DATABASE_SUMMARY.md)** | **Visão Geral** |
+| Migrations SQL | database/migrations/*.sql | Arquivos SQL |
 | Schema Completo | [BACKEND_API_SPECS.md](BACKEND_API_SPECS.md) | Schema PostgreSQL |
 | Diagrama Visual | [RESUMO_VISUAL.md](RESUMO_VISUAL.md) | Arquitetura do Banco |
 | Tabelas Principais | [BACKEND_API_SPECS.md](BACKEND_API_SPECS.md) | Tabelas |
@@ -154,13 +158,36 @@ cadastrodebeneficios/
 | Cartão/PIX/Débito | [PLANEJAMENTO_COMPLETO.md](PLANEJAMENTO_COMPLETO.md) | Módulo 9.2 |
 | Recorrência | [RESUMO_VISUAL.md](RESUMO_VISUAL.md) | Recorrência |
 
-### 📱 Fluxo de Cadastro
+### 🎨 Landing Page e Navegação ✅ **COMPLETO**
 | Tópico | Documento | Seção |
 |--------|-----------|-------|
+| **📘 Documentação Completa Módulo 4** | **[MODULO4_COMPLETO.md](MODULO4_COMPLETO.md)** | **✨ Documentação Oficial** |
+| **Implementação Detalhada** | **[LANDING_PAGE_IMPLEMENTATION.md](LANDING_PAGE_IMPLEMENTATION.md)** | **✨ Guia Técnico** |
+| **Guia Rápido de Testes** | **[QUICKSTART_LANDING_PAGE.md](QUICKSTART_LANDING_PAGE.md)** | **✨ Início Rápido** |
+| Splash Screen | [MODULO4_COMPLETO.md](MODULO4_COMPLETO.md) | Componente 1 |
+| Landing Page Responsiva | [MODULO4_COMPLETO.md](MODULO4_COMPLETO.md) | Componente 2 |
+| GoRouter/Navegação | [MODULO4_COMPLETO.md](MODULO4_COMPLETO.md) | Componente 3 |
+| Route Guards | [MODULO4_COMPLETO.md](MODULO4_COMPLETO.md) | Arquitetura |
+| Deep Linking (Android/iOS) | [MODULO4_COMPLETO.md](MODULO4_COMPLETO.md) | Deep Linking |
+| Animações (animate_do) | [MODULO4_COMPLETO.md](MODULO4_COMPLETO.md) | Animações |
+| Testes e Validação | [MODULO4_COMPLETO.md](MODULO4_COMPLETO.md) | Testes |
+| Status no Planejamento | [PLANEJAMENTO_COMPLETO.md](PLANEJAMENTO_COMPLETO.md) | Módulo 4 ✅ 100% |
+
+### 📱 Fluxo de Cadastro 🟡 **EM DESENVOLVIMENTO**
+| Tópico | Documento | Seção |
+|--------|-----------|-------|
+| **📘 Documentação Completa Módulo 5** | **[MODULO5_COMPLETO.md](MODULO5_COMPLETO.md)** | **✨ Documentação Oficial** |
+| Tela de Introdução | [MODULO5_COMPLETO.md](MODULO5_COMPLETO.md) | ✅ Componente 1 |
+| Formulário de Identificação | [MODULO5_COMPLETO.md](MODULO5_COMPLETO.md) | ✅ Componente 2 |
+| Sistema de Validação | [MODULO5_COMPLETO.md](MODULO5_COMPLETO.md) | ✅ Validadores |
+| Máscaras de Entrada | [MODULO5_COMPLETO.md](MODULO5_COMPLETO.md) | ✅ Formatters |
+| Formulário de Endereço | [MODULO5_COMPLETO.md](MODULO5_COMPLETO.md) | ⏳ Pendente |
+| Formulário de Senha | [MODULO5_COMPLETO.md](MODULO5_COMPLETO.md) | ⏳ Pendente |
 | Visão Completa | [RESUMO_VISUAL.md](RESUMO_VISUAL.md) | Jornada do Usuário |
 | 8 Etapas | [README.md](README.md) | Fluxo de Cadastro |
 | Implementação | [PLANEJAMENTO_COMPLETO.md](PLANEJAMENTO_COMPLETO.md) | Módulos 5-10 |
 | APIs | [BACKEND_API_SPECS.md](BACKEND_API_SPECS.md) | Registration |
+| Status no Planejamento | [PLANEJAMENTO_COMPLETO.md](PLANEJAMENTO_COMPLETO.md) | Módulo 5 🟡 50% |
 
 ### 🏠 Área do Cliente
 | Tópico | Documento | Seção |
@@ -346,15 +373,48 @@ Use este INDICE.md para encontrar rapidamente qualquer tópico pelo índice deta
 
 Este índice será atualizado conforme novos documentos forem adicionados ao projeto.
 
-**Última atualização:** 11/12/2024
+**Última atualização:** 16/12/2025
 
 **Documentos atuais:**
+
+### 📘 Documentação Geral
 - ✅ README.md
 - ✅ RESUMO_VISUAL.md
 - ✅ QUICK_START.md
-- ✅ PLANEJAMENTO_COMPLETO.md
-- ✅ BACKEND_API_SPECS.md
+- ✅ PLANEJAMENTO_COMPLETO.md ← **✨ ATUALIZADO 16/12**
 - ✅ INDICE.md (este arquivo)
+
+### 🔧 Backend e API
+- ✅ BACKEND_API_SPECS.md
+- ✅ BACKEND_IMPLEMENTATION_STATUS.md
+- ✅ IMPLEMENTATION_COMPLETE_SUMMARY.md
+- ✅ backend/README.md
+- ✅ QUICKSTART_BACKEND.md
+
+### 🗄️ Banco de Dados
+- ✅ DATABASE_SETUP.md
+- ✅ DATABASE_QUICKSTART.md
+- ✅ DATABASE_SUMMARY.md
+- ✅ DATABASE_TESTING_COMPLETE.md
+
+### ⚙️ Configuração
+- ✅ ENV_SETUP_GUIDE.md
+- ✅ ENV_QUICKSTART.md
+- ✅ ENV_IMPLEMENTATION_SUMMARY.md
+
+### 🎨 Frontend e UI
+- ✅ MODULO4_COMPLETO.md ← **✅ COMPLETO 16/12**
+- ✅ LANDING_PAGE_IMPLEMENTATION.md ← **✅ COMPLETO 16/12**
+- ✅ QUICKSTART_LANDING_PAGE.md ← **✅ COMPLETO 16/12**
+- ✅ MODULO5_COMPLETO.md ← **✨ NOVO 16/12**
+
+### 🔐 Autenticação
+- ✅ GOOGLE_OAUTH_TESTS.md
+- ✅ TESTS_SUMMARY.md
+
+### 📱 Testes
+- ✅ DEVICE_TESTING_GUIDE.md
+- ✅ IMPLEMENTATION_SUMMARY.md
 
 ---
 

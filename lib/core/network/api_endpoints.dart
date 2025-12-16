@@ -1,12 +1,11 @@
+import 'package:cadastro_beneficios/core/config/env_config.dart';
+
 /// Endpoints da API
 ///
 /// Centraliza todas as URLs dos endpoints da API
 class ApiEndpoints {
-  // Base URL (deve ser configurada por ambiente)
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:3000/api/v1',
-  );
+  // Base URL (lê do .env via EnvConfig)
+  static String get baseUrl => '${EnvConfig.backendApiUrl}/api/v1';
 
   // ===== Auth Endpoints =====
   static const String login = '/auth/login';

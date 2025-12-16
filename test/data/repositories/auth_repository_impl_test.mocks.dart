@@ -88,16 +88,19 @@ class MockAuthRemoteDataSource extends _i1.Mock
       ) as _i5.Future<_i2.AuthTokenModel>);
 
   @override
-  _i5.Future<_i2.AuthTokenModel> loginWithGoogle() => (super.noSuchMethod(
+  _i5.Future<_i2.AuthTokenModel> loginWithGoogle({required String? idToken}) =>
+      (super.noSuchMethod(
         Invocation.method(
           #loginWithGoogle,
           [],
+          {#idToken: idToken},
         ),
         returnValue: _i5.Future<_i2.AuthTokenModel>.value(_FakeAuthTokenModel_0(
           this,
           Invocation.method(
             #loginWithGoogle,
             [],
+            {#idToken: idToken},
           ),
         )),
       ) as _i5.Future<_i2.AuthTokenModel>);

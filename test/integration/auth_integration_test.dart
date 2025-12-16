@@ -18,6 +18,7 @@ import 'package:cadastro_beneficios/domain/usecases/auth/forgot_password_usecase
 import 'package:cadastro_beneficios/presentation/bloc/auth/auth_bloc.dart';
 import 'package:cadastro_beneficios/presentation/bloc/auth/auth_event.dart';
 import 'package:cadastro_beneficios/presentation/bloc/auth/auth_state.dart';
+import 'package:cadastro_beneficios/core/services/google_auth_service.dart';
 
 import 'auth_integration_test.mocks.dart';
 
@@ -25,6 +26,7 @@ import 'auth_integration_test.mocks.dart';
   DioClient,
   FlutterSecureStorage,
   AuthLocalDataSource,
+  GoogleAuthService,
 ])
 void main() {
   late AuthBloc authBloc;
@@ -38,6 +40,8 @@ void main() {
   late LogoutUseCase logoutUseCase;
   late GetCurrentUserUseCase getCurrentUserUseCase;
   late ForgotPasswordUseCase forgotPasswordUseCase;
+
+  late MockGoogleAuthService mockGoogleAuthService;
 
   late MockDioClient mockDioClient;
   late MockFlutterSecureStorage mockSecureStorage;
@@ -66,9 +70,12 @@ void main() {
     when(mockLocalDataSource.cacheUser(any)).thenAnswer((_) async => {});
     when(mockLocalDataSource.clearCache()).thenAnswer((_) async => {});
 
+    // Configurar mocks adicionais
+    mockGoogleAuthService = MockGoogleAuthService();
+
     // Configurar UseCases
     loginWithEmailUseCase = LoginWithEmailUseCase(authRepository);
-    loginWithGoogleUseCase = LoginWithGoogleUseCase(authRepository);
+    loginWithGoogleUseCase = LoginWithGoogleUseCase(authRepository, mockGoogleAuthService);
     registerUseCase = RegisterUseCase(authRepository);
     logoutUseCase = LogoutUseCase(authRepository);
     getCurrentUserUseCase = GetCurrentUserUseCase(authRepository);
