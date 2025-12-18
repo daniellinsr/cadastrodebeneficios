@@ -16,8 +16,11 @@ class ApiEndpoints {
   static const String resetPassword = '/auth/reset-password';
   static const String refreshToken = '/auth/refresh';
   static const String me = '/auth/me';
-  static const String sendVerificationCode = '/auth/verify/send';
+  static const String sendVerificationCode = '/verification/send';
   static const String verifyCode = '/auth/verify/check';
+  static const String verifyCodeEndpoint = '/verification/verify';
+  static const String verificationStatus = '/verification/status';
+  static const String completeProfile = '/auth/profile/complete';
 
   // ===== Registration Endpoints =====
   static const String registration = '/registration';

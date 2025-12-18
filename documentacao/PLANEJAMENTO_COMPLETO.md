@@ -10,15 +10,21 @@
 |--------|--------|-----------|-------------------|
 | **1. Configuração Inicial** | ✅ Quase Completo | 90% | 2025-12-15 |
 | **2. Design System** | ✅ Quase Completo | 85% | 2025-12-16 |
-| **3. Autenticação** | ✅ Funcional | 80% | 2025-12-15 |
+| **3. Autenticação** | ✅ **COMPLETO** | 95% | 2025-12-16 |
 | **4. Tela Inicial/Navegação** | ✅ **COMPLETO** | 100% | 2025-12-16 |
-| **5. Fluxo de Cadastro - Etapa 1** | 🟡 **EM DESENVOLVIMENTO** | 50% | 2025-12-16 |
+| **5. Fluxo de Cadastro - Etapa 1** | 🟡 **EM DESENVOLVIMENTO** | 70% | 2025-12-16 |
 | **6-10. Fluxo de Cadastro** | 🚧 Em Planejamento | 0% | - |
 | **11. Área do Cliente** | 🚧 Em Planejamento | 0% | - |
 | **12. Painel Admin** | 🚧 Em Planejamento | 0% | - |
 | **13-19. Outros** | 🚧 Pendente | 0% | - |
 
 ### Implementações Recentes (16/12/2025):
+
+#### Módulo 3 - Firebase Authentication ✅ **ATUALIZADO**
+✅ **Firebase Auth implementado** - Google Sign-In funcionando em Web, Android e iOS
+✅ **FirebaseAuthService criado** - Serviço unificado para autenticação
+✅ **Firebase inicializado** - main.dart com Firebase.initializeApp()
+✅ **Configurações multiplataforma** - firebase_options.dart criado
 
 #### Módulo 4 - Landing Page e Navegação ✅
 ✅ **Landing Page Responsiva** - Completa com animações
@@ -29,9 +35,12 @@
 
 #### Módulo 5 - Fluxo de Cadastro (Etapa 1) 🟡
 ✅ **Tela de Introdução** - Com cards de benefícios e animações
+✅ **Google Sign-In integrado** - Botão funcionando em todas as plataformas
 ✅ **Formulário de Identificação** - 5 campos com validação
 ✅ **Sistema de Validação** - CPF, data, celular, email
 ✅ **Máscaras de Entrada** - CPF, data, telefone, CEP
+✅ **Auto-save (Draft)** - Sistema de rascunho implementado
+✅ **Animações e Transições** - FadeIn, SlideIn entre etapas
 ⏳ **Formulário de Endereço** - Pendente
 ⏳ **Formulário de Senha** - Pendente
 
@@ -208,7 +217,7 @@ lib/presentation/widgets/
 
 ---
 
-## 📦 MÓDULO 3: Autenticação e Segurança ✅ **80% COMPLETO**
+## 📦 MÓDULO 3: Autenticação e Segurança ✅ **95% COMPLETO**
 
 ### 3.1 Sistema de Autenticação
 **Objetivos:**
@@ -218,9 +227,11 @@ lib/presentation/widgets/
 
 **Tarefas:**
 - [x] Setup OAuth 2.0 / JWT ✅ **IMPLEMENTADO** (Backend + Frontend)
-- [x] Implementar login com Google ✅ **IMPLEMENTADO** (Google Sign-in)
-- [x] Implementar login com email/senha ✅ **IMPLEMENTADO** (login_page.dart + backend)
-- [x] Sistema de recuperação de senha ✅ **IMPLEMENTADO** (forgot_password_page.dart + backend)
+- [x] Implementar login com Google ✅ **IMPLEMENTADO** (Firebase Authentication)
+- [x] Firebase Authentication ✅ **IMPLEMENTADO** (Web, Android, iOS)
+- [x] FirebaseAuthService criado ✅ **IMPLEMENTADO** (lib/core/services/firebase_auth_service.dart)
+- [x] Implementar login com email/senha ✅ **IMPLEMENTADO** (login_page.dart + backend + Firebase)
+- [x] Sistema de recuperação de senha ✅ **IMPLEMENTADO** (forgot_password_page.dart + backend + Firebase)
 - [ ] Verificação de código (SMS/WhatsApp)
 - [x] Armazenamento seguro de tokens (secure storage) ✅ **IMPLEMENTADO** (TokenService)
 - [x] Refresh token automático ✅ **IMPLEMENTADO** (Backend)
@@ -230,11 +241,32 @@ lib/presentation/widgets/
 ```yaml
 dependencies:
   google_sign_in: ^6.2.1
-  firebase_auth: ^4.15.3
+  firebase_core: ^3.6.0        # ✅ ADICIONADO
+  firebase_auth: ^5.3.1        # ✅ ADICIONADO
   flutter_secure_storage: ^9.0.0
   local_auth: ^2.1.8
   pin_code_fields: ^8.0.1
 ```
+
+**Arquivos Implementados:**
+- ✅ `lib/firebase_options.dart` - Configurações Firebase (Web, Android, iOS)
+- ✅ `lib/core/services/firebase_auth_service.dart` - Serviço de autenticação Firebase
+- ✅ `lib/main.dart` - Inicialização do Firebase
+- ✅ `android/build.gradle.kts` - Google Services Plugin
+- ✅ `android/app/build.gradle.kts` - Firebase Dependencies
+- ✅ `android/app/google-services.json` - Configuração Android
+- ✅ `ios/Runner/GoogleService-Info.plist` - Configuração iOS
+
+**Funcionalidades do FirebaseAuthService:**
+- ✅ `signInWithGoogle()` - Login com Google (Web: popup, Mobile: nativo)
+- ✅ `signInWithEmailAndPassword()` - Login tradicional
+- ✅ `createUserWithEmailAndPassword()` - Criar conta
+- ✅ `signOut()` - Logout
+- ✅ `sendPasswordResetEmail()` - Recuperar senha
+- ✅ `updateProfile()` - Atualizar perfil
+- ✅ `currentUser` - Usuário atual
+- ✅ `authStateChanges` - Stream de mudanças
+- ✅ Tratamento de erros Firebase completo
 
 **Fluxos:**
 1. **Login com Google**: OAuth → Token → Home
@@ -551,8 +583,6 @@ POST /v1/registration/{id}/plan
 
 **Métodos de Pagamento:**
 1. **Cartão de Crédito** (recorrência)
-2. **PIX** (QR Code)
-3. **Débito em Conta**
 
 ### 9.2 Implementação por Método
 
@@ -578,35 +608,6 @@ POST /v1/registration/{id}/plan
 - [ ] Tokenização segura
 - [ ] Recorrência
 
-#### 9.2.2 PIX
-**Funcionalidades:**
-- Geração de QR Code
-- Chave Copia e Cola
-- Verificação automática de pagamento
-- Expiração de código
-
-**Tarefas:**
-- [ ] Integração com provedor PIX
-- [ ] Geração de QR Code
-- [ ] Copiar chave PIX
-- [ ] Polling de status
-- [ ] Webhook de confirmação
-- [ ] Timer de expiração
-
-#### 9.2.3 Débito em Conta
-**Campos:**
-- Banco (ISPB)
-- Agência
-- Conta
-- Tipo de conta
-- CPF do titular
-
-**Tarefas:**
-- [ ] Lista de bancos
-- [ ] Validação de dados bancários
-- [ ] Autorização de débito
-- [ ] Confirmação assíncrona
-
 ### 9.3 Dependências de Pagamento
 ```yaml
 dependencies:
@@ -614,9 +615,6 @@ dependencies:
   stripe_flutter: ^10.0.0
   credit_card_validator: ^2.1.0
   flutter_credit_card: ^4.0.1
-
-  # PIX
-  qr_flutter: ^4.1.0
 
   # Utils
   encrypt: ^5.0.3
@@ -636,8 +634,6 @@ dependencies:
 ```dart
 POST /v1/registration/{id}/payment/intents
 POST /v1/payment/intents/{id}/confirm-card
-POST /v1/payment/intents/{id}/create-pix
-POST /v1/payment/intents/{id}/confirm-debit
 GET  /v1/payment/intents/{id}/status
 POST /v1/registration/{id}/payment/ack
 ```

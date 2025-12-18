@@ -5,6 +5,7 @@ import 'package:cadastro_beneficios/core/theme/app_colors.dart';
 import 'package:cadastro_beneficios/core/theme/app_text_styles.dart';
 import 'package:cadastro_beneficios/core/theme/responsive_utils.dart';
 import 'package:cadastro_beneficios/core/utils/validators.dart';
+import 'package:cadastro_beneficios/core/di/service_locator.dart';
 
 /// Formulário de criação de senha
 /// Coleta: Senha e Confirmação de Senha
@@ -91,18 +92,52 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
       _isLoading = true;
     });
 
-    // TODO: Integrar com backend
-    // Por enquanto, apenas simula um delay e mostra confirmação
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Salvar senha no RegistrationService
+      sl.registrationService.setPassword(_senhaController.text);
 
-    if (!mounted) return;
+      // Executar registro no backend
+      final result = await sl.registrationService.register();
 
-    setState(() {
-      _isLoading = false;
-    });
+      if (!mounted) return;
 
-    // Mostra diálogo de sucesso
-    _showSuccessDialog();
+      if (result.isSuccess) {
+        // Sucesso! Token já foi salvo automaticamente pelo service
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Mostra diálogo de sucesso e redireciona
+        _showSuccessDialog();
+      } else {
+        // Erro no registro
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.errorMessage ?? 'Erro ao realizar cadastro'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro inesperado: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
   }
 
   void _showSuccessDialog() {
@@ -121,15 +156,17 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
           ],
         ),
         content: const Text(
-          'Seu cadastro foi realizado com sucesso!\n\nVocê receberá um email de confirmação em breve.',
+          'Seu cadastro foi realizado com sucesso!\n\nBem-vindo ao Sistema de Cartão de Benefícios!',
           style: TextStyle(fontSize: 16),
         ),
         actions: [
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // TODO: Navegar para tela de login ou home
-              context.go('/login');
+              // Limpa os dados do serviço de registro
+              sl.registrationService.clear();
+              // Navega para a home (usuário já está autenticado)
+              context.go('/home');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryBlue,
@@ -139,7 +176,7 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Fazer Login'),
+            child: const Text('Ir para Home'),
           ),
         ],
       ),

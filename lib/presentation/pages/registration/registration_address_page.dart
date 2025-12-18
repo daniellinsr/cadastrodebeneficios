@@ -8,6 +8,8 @@ import 'package:cadastro_beneficios/core/theme/responsive_utils.dart';
 import 'package:cadastro_beneficios/core/utils/validators.dart';
 import 'package:cadastro_beneficios/core/utils/input_formatters.dart';
 import 'package:cadastro_beneficios/core/services/viacep_service.dart';
+import 'package:cadastro_beneficios/core/services/registration_draft_service.dart';
+import 'package:cadastro_beneficios/core/di/service_locator.dart';
 
 /// Formulário de endereço completo
 /// Coleta: CEP, Logradouro, Número, Complemento, Bairro, Cidade, Estado
@@ -28,12 +30,21 @@ class _RegistrationAddressPageState extends State<RegistrationAddressPage> {
   final _bairroController = TextEditingController();
   final _cidadeController = TextEditingController();
   final _estadoController = TextEditingController();
+  final _draftService = RegistrationDraftService();
 
   bool _isLoading = false;
   bool _isSearchingCep = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+    _setupAutoSave();
+  }
+
+  @override
   void dispose() {
+    _saveDraft();
     _cepController.dispose();
     _logradouroController.dispose();
     _numeroController.dispose();
@@ -42,6 +53,68 @@ class _RegistrationAddressPageState extends State<RegistrationAddressPage> {
     _cidadeController.dispose();
     _estadoController.dispose();
     super.dispose();
+  }
+
+  /// Carrega dados salvos automaticamente
+  Future<void> _loadDraft() async {
+    final data = await _draftService.loadAddressDraft();
+
+    if (data != null && mounted) {
+      setState(() {
+        _cepController.text = data['cep'] ?? '';
+        _logradouroController.text = data['logradouro'] ?? '';
+        _numeroController.text = data['numero'] ?? '';
+        _complementoController.text = data['complemento'] ?? '';
+        _bairroController.text = data['bairro'] ?? '';
+        _cidadeController.text = data['cidade'] ?? '';
+        _estadoController.text = data['estado'] ?? '';
+      });
+
+      // Mostra feedback ao usuário
+      if (data['cep']?.isNotEmpty ?? false) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Dados de endereço carregados automaticamente'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Configura salvamento automático a cada mudança
+  void _setupAutoSave() {
+    _cepController.addListener(_saveDraft);
+    _logradouroController.addListener(_saveDraft);
+    _numeroController.addListener(_saveDraft);
+    _complementoController.addListener(_saveDraft);
+    _bairroController.addListener(_saveDraft);
+    _cidadeController.addListener(_saveDraft);
+    _estadoController.addListener(_saveDraft);
+  }
+
+  /// Salva dados automaticamente
+  Future<void> _saveDraft() async {
+    // Só salva se houver algum dado preenchido
+    if (_cepController.text.isEmpty &&
+        _logradouroController.text.isEmpty &&
+        _numeroController.text.isEmpty &&
+        _bairroController.text.isEmpty &&
+        _cidadeController.text.isEmpty &&
+        _estadoController.text.isEmpty) {
+      return;
+    }
+
+    await _draftService.saveAddressDraft(
+      cep: _cepController.text,
+      logradouro: _logradouroController.text,
+      numero: _numeroController.text,
+      complemento: _complementoController.text,
+      bairro: _bairroController.text,
+      cidade: _cidadeController.text,
+      estado: _estadoController.text,
+    );
   }
 
   /// Busca endereço pelo CEP na API ViaCEP
@@ -117,9 +190,16 @@ class _RegistrationAddressPageState extends State<RegistrationAddressPage> {
       _isLoading = true;
     });
 
-    // TODO: Integrar com backend
-    // Por enquanto, apenas simula um delay e navega para próxima tela
-    await Future.delayed(const Duration(seconds: 1));
+    // Salvar dados no RegistrationService
+    sl.registrationService.setCep(_cepController.text);
+    sl.registrationService.setLogradouro(_logradouroController.text);
+    sl.registrationService.setNumero(_numeroController.text);
+    sl.registrationService.setComplemento(
+      _complementoController.text.isEmpty ? null : _complementoController.text,
+    );
+    sl.registrationService.setBairro(_bairroController.text);
+    sl.registrationService.setCidade(_cidadeController.text);
+    sl.registrationService.setEstado(_estadoController.text);
 
     if (!mounted) return;
 
@@ -127,7 +207,7 @@ class _RegistrationAddressPageState extends State<RegistrationAddressPage> {
       _isLoading = false;
     });
 
-    // TODO: Passar dados para próxima tela
+    // Navega para próxima tela
     context.go('/registration/password');
   }
 

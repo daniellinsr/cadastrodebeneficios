@@ -25,6 +25,19 @@ export interface User {
 }
 
 export interface AuthToken {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    phone_number?: string;
+    cpf?: string;
+    birth_date?: string;
+    role?: string;
+    is_email_verified?: boolean;
+    is_phone_verified?: boolean;
+    profile_completion_status?: string;
+    created_at?: Date;
+  };
   access_token: string;
   refresh_token: string;
   token_type: string;

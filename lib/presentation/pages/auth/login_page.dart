@@ -62,15 +62,30 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
+          print('🎯 [LoginPage] Estado recebido: ${state.runtimeType}');
+
           if (state is AuthError) {
+            print('❌ [LoginPage] Erro: ${state.message}');
             CustomSnackBar.show(
               context,
               message: state.message,
               type: SnackBarType.error,
             );
           } else if (state is AuthAuthenticated) {
-            // Navegar para home
-            context.go('/home');
+            print('✅ [LoginPage] AuthAuthenticated recebido!');
+            print('   User: ${state.user.email}');
+            print('   isProfileComplete: ${state.user.isProfileComplete}');
+
+            // Verificar se o perfil está completo
+            if (state.user.isProfileComplete) {
+              print('🔀 [LoginPage] Redirecionando para /home...');
+              // Perfil completo → navegar para home
+              context.go('/home');
+            } else {
+              print('🔀 [LoginPage] Redirecionando para /complete-profile...');
+              // Perfil incompleto → navegar para complete-profile
+              context.go('/complete-profile');
+            }
           }
         },
         builder: (context, state) {

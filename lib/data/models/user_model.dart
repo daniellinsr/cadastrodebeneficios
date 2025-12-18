@@ -25,6 +25,8 @@ class UserModel {
   final bool isEmailVerified;
   @JsonKey(name: 'is_phone_verified')
   final bool isPhoneVerified;
+  @JsonKey(name: 'profile_completion_status')
+  final String? profileCompletionStatus;
 
   UserModel({
     required this.id,
@@ -38,6 +40,7 @@ class UserModel {
     this.updatedAt,
     this.isEmailVerified = false,
     this.isPhoneVerified = false,
+    this.profileCompletionStatus,
   });
 
   /// Criar UserModel a partir de JSON
@@ -61,6 +64,9 @@ class UserModel {
       updatedAt: updatedAt,
       isEmailVerified: isEmailVerified,
       isPhoneVerified: isPhoneVerified,
+      profileCompletionStatus: ProfileCompletionStatusExtension.fromString(
+        profileCompletionStatus ?? 'complete',
+      ),
     );
   }
 
@@ -78,6 +84,7 @@ class UserModel {
       updatedAt: user.updatedAt,
       isEmailVerified: user.isEmailVerified,
       isPhoneVerified: user.isPhoneVerified,
+      profileCompletionStatus: user.profileCompletionStatus.value,
     );
   }
 }

@@ -7,6 +7,8 @@ import 'package:cadastro_beneficios/core/theme/app_text_styles.dart';
 import 'package:cadastro_beneficios/core/theme/responsive_utils.dart';
 import 'package:cadastro_beneficios/core/utils/validators.dart';
 import 'package:cadastro_beneficios/core/utils/input_formatters.dart';
+import 'package:cadastro_beneficios/core/services/registration_draft_service.dart';
+import 'package:cadastro_beneficios/core/di/service_locator.dart';
 
 /// Formulário de identificação inicial
 /// Coleta: Nome, CPF, Data de Nascimento, Celular, Email
@@ -26,17 +28,81 @@ class _RegistrationIdentificationPageState
   final _dataNascimentoController = TextEditingController();
   final _celularController = TextEditingController();
   final _emailController = TextEditingController();
+  final _draftService = RegistrationDraftService();
 
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+    _setupAutoSave();
+  }
+
+  @override
   void dispose() {
+    _saveDraft();
     _nomeController.dispose();
     _cpfController.dispose();
     _dataNascimentoController.dispose();
     _celularController.dispose();
     _emailController.dispose();
     super.dispose();
+  }
+
+  /// Carrega dados salvos automaticamente
+  Future<void> _loadDraft() async {
+    final data = await _draftService.loadIdentificationDraft();
+
+    if (data != null && mounted) {
+      setState(() {
+        _nomeController.text = data['name'] ?? '';
+        _cpfController.text = data['cpf'] ?? '';
+        _dataNascimentoController.text = data['birthDate'] ?? '';
+        _celularController.text = data['phoneNumber'] ?? '';
+        _emailController.text = data['email'] ?? '';
+      });
+
+      // Mostra feedback ao usuário
+      if (data['name']?.isNotEmpty ?? false) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Dados carregados automaticamente'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Configura salvamento automático a cada mudança
+  void _setupAutoSave() {
+    _nomeController.addListener(_saveDraft);
+    _cpfController.addListener(_saveDraft);
+    _dataNascimentoController.addListener(_saveDraft);
+    _celularController.addListener(_saveDraft);
+    _emailController.addListener(_saveDraft);
+  }
+
+  /// Salva dados automaticamente
+  Future<void> _saveDraft() async {
+    // Só salva se houver algum dado preenchido
+    if (_nomeController.text.isEmpty &&
+        _cpfController.text.isEmpty &&
+        _dataNascimentoController.text.isEmpty &&
+        _celularController.text.isEmpty &&
+        _emailController.text.isEmpty) {
+      return;
+    }
+
+    await _draftService.saveIdentificationDraft(
+      nome: _nomeController.text,
+      cpf: _cpfController.text,
+      dataNascimento: _dataNascimentoController.text,
+      celular: _celularController.text,
+      email: _emailController.text,
+    );
   }
 
   Future<void> _submitForm() async {
@@ -48,9 +114,15 @@ class _RegistrationIdentificationPageState
       _isLoading = true;
     });
 
-    // TODO: Integrar com backend
-    // Por enquanto, apenas simula um delay e navega para próxima tela
-    await Future.delayed(const Duration(seconds: 1));
+    // Salva antes de navegar
+    await _saveDraft();
+
+    // Salvar dados no RegistrationService
+    sl.registrationService.setName(_nomeController.text);
+    sl.registrationService.setEmail(_emailController.text);
+    sl.registrationService.setCpf(_cpfController.text);
+    sl.registrationService.setBirthDate(_dataNascimentoController.text);
+    sl.registrationService.setPhoneNumber(_celularController.text);
 
     if (!mounted) return;
 
@@ -58,7 +130,7 @@ class _RegistrationIdentificationPageState
       _isLoading = false;
     });
 
-    // TODO: Passar dados para próxima tela
+    // Navega para próxima tela
     context.go('/registration/address');
   }
 

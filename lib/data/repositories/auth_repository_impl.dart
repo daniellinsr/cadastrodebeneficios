@@ -60,6 +60,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String phoneNumber,
     String? cpf,
+    String? birthDate,
+    String? cep,
+    String? logradouro,
+    String? numero,
+    String? complemento,
+    String? bairro,
+    String? cidade,
+    String? estado,
   }) async {
     try {
       final tokenModel = await remoteDataSource.register(
@@ -68,6 +76,14 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
         phoneNumber: phoneNumber,
         cpf: cpf,
+        birthDate: birthDate,
+        cep: cep,
+        logradouro: logradouro,
+        numero: numero,
+        complemento: complemento,
+        bairro: bairro,
+        cidade: cidade,
+        estado: estado,
       );
 
       return Right(tokenModel.toEntity());
@@ -202,6 +218,81 @@ class AuthRepositoryImpl implements AuthRepository {
         code: code,
       );
       return const Right(null);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> completeProfile({
+    required String cpf,
+    required String phoneNumber,
+    required String cep,
+    required String street,
+    required String number,
+    String? complement,
+    required String neighborhood,
+    required String city,
+    required String state,
+    String? birthDate,
+  }) async {
+    try {
+      final userModel = await remoteDataSource.completeProfile(
+        cpf: cpf,
+        phoneNumber: phoneNumber,
+        cep: cep,
+        street: street,
+        number: number,
+        complement: complement,
+        neighborhood: neighborhood,
+        city: city,
+        state: state,
+        birthDate: birthDate,
+      );
+
+      // CRÍTICO: Atualizar cache com o usuário atualizado
+      // Isso garante que getCurrentUser() retorne o usuário com perfil completo
+      await localDataSource.cacheUser(userModel);
+
+      return Right(userModel.toEntity());
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> sendVerificationCodeV2(String type) async {
+    try {
+      await remoteDataSource.sendVerificationCodeV2(type);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> verifyCodeV2(String type, String code) async {
+    try {
+      await remoteDataSource.verifyCodeV2(type, code);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_handleDioError(e));
+    } catch (e) {
+      return Left(UnknownFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, bool>>> getVerificationStatus() async {
+    try {
+      final status = await remoteDataSource.getVerificationStatus();
+      return Right(status);
     } on DioException catch (e) {
       return Left(_handleDioError(e));
     } catch (e) {

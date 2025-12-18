@@ -12,7 +12,7 @@ const pool = new Pool({
   ssl: process.env.DB_SSL_MODE === 'require' ? { rejectUnauthorized: false } : false,
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000, // 10 segundos para servidor remoto
 });
 
 pool.on('connect', () => {

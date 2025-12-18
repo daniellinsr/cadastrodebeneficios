@@ -1,4 +1,4 @@
-package com.beneficios.cadastro_beneficios
+package com.example.cadastro_beneficios
 
 import io.flutter.embedding.android.FlutterActivity
 

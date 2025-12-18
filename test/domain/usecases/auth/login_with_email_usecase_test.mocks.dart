@@ -99,6 +99,14 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
     required String? password,
     required String? phoneNumber,
     String? cpf,
+    String? birthDate,
+    String? cep,
+    String? logradouro,
+    String? numero,
+    String? complemento,
+    String? bairro,
+    String? cidade,
+    String? estado,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -110,6 +118,14 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
             #password: password,
             #phoneNumber: phoneNumber,
             #cpf: cpf,
+            #birthDate: birthDate,
+            #cep: cep,
+            #logradouro: logradouro,
+            #numero: numero,
+            #complemento: complemento,
+            #bairro: bairro,
+            #cidade: cidade,
+            #estado: estado,
           },
         ),
         returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.AuthToken>>.value(
@@ -124,6 +140,14 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
               #password: password,
               #phoneNumber: phoneNumber,
               #cpf: cpf,
+              #birthDate: birthDate,
+              #cep: cep,
+              #logradouro: logradouro,
+              #numero: numero,
+              #complemento: complemento,
+              #bairro: bairro,
+              #cidade: cidade,
+              #estado: estado,
             },
           ),
         )),
@@ -302,4 +326,56 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
           ),
         )),
       ) as _i4.Future<_i2.Either<_i5.Failure, void>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i7.User>> completeProfile({
+    required String? cpf,
+    required String? phoneNumber,
+    required String? cep,
+    required String? street,
+    required String? number,
+    String? complement,
+    required String? neighborhood,
+    required String? city,
+    required String? state,
+    String? birthDate,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #completeProfile,
+          [],
+          {
+            #cpf: cpf,
+            #phoneNumber: phoneNumber,
+            #cep: cep,
+            #street: street,
+            #number: number,
+            #complement: complement,
+            #neighborhood: neighborhood,
+            #city: city,
+            #state: state,
+            #birthDate: birthDate,
+          },
+        ),
+        returnValue: _i4.Future<_i2.Either<_i5.Failure, _i7.User>>.value(
+            _FakeEither_0<_i5.Failure, _i7.User>(
+          this,
+          Invocation.method(
+            #completeProfile,
+            [],
+            {
+              #cpf: cpf,
+              #phoneNumber: phoneNumber,
+              #cep: cep,
+              #street: street,
+              #number: number,
+              #complement: complement,
+              #neighborhood: neighborhood,
+              #city: city,
+              #state: state,
+              #birthDate: birthDate,
+            },
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i5.Failure, _i7.User>>);
 }

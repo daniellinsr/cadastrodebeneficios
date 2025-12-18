@@ -8,6 +8,14 @@ export const generateTokens = async (user: {
   id: string;
   email: string;
   name: string;
+  phone_number?: string;
+  cpf?: string;
+  birth_date?: string;
+  role?: string;
+  email_verified?: boolean;
+  phone_verified?: boolean;
+  profile_completion_status?: string;
+  created_at?: Date;
 }): Promise<AuthToken> => {
   const payload: UserPayload = {
     id: user.id,
@@ -33,6 +41,19 @@ export const generateTokens = async (user: {
   const expiresInSeconds = 7 * 24 * 60 * 60;
 
   return {
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone_number: user.phone_number,
+      cpf: user.cpf,
+      birth_date: user.birth_date,
+      role: user.role || 'beneficiary',
+      is_email_verified: user.email_verified || false,
+      is_phone_verified: user.phone_verified || false,
+      profile_completion_status: user.profile_completion_status || 'complete',
+      created_at: user.created_at,
+    },
     access_token: accessToken,
     refresh_token: refreshToken,
     token_type: 'Bearer',

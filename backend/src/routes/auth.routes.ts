@@ -6,6 +6,7 @@ import {
   refreshToken,
   getCurrentUser,
   logout,
+  completeProfile,
   forgotPassword,
 } from '../controllers/auth.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
@@ -25,5 +26,7 @@ router.post('/logout', logout);
 router.post('/forgot-password', forgotPassword);
 
 router.get('/me', authMiddleware, getCurrentUser);
+
+router.put('/profile/complete', authMiddleware, completeProfile);
 
 export default router;

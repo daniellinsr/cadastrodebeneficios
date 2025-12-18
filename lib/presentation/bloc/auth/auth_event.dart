@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:cadastro_beneficios/domain/entities/user.dart';
 
 /// Eventos de autenticação
 ///
@@ -76,4 +77,15 @@ class AuthForgotPasswordRequested extends AuthEvent {
 /// Evento: Atualizar dados do usuário
 class AuthUserUpdated extends AuthEvent {
   const AuthUserUpdated();
+}
+
+/// Evento: Definir usuário diretamente (sem buscar do backend)
+/// Usado após operações que já retornam o usuário atualizado (ex: completeProfile)
+class AuthUserSet extends AuthEvent {
+  final User user;
+
+  const AuthUserSet(this.user);
+
+  @override
+  List<Object?> get props => [user];
 }

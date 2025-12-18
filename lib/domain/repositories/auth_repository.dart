@@ -34,6 +34,14 @@ abstract class AuthRepository {
     required String password,
     required String phoneNumber,
     String? cpf,
+    String? birthDate,
+    String? cep,
+    String? logradouro,
+    String? numero,
+    String? complemento,
+    String? bairro,
+    String? cidade,
+    String? estado,
   });
 
   /// Logout do usuário
@@ -95,6 +103,44 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> verifyCode({
     required String phoneNumber,
     required String code,
+  });
+
+  /// Enviar código de verificação por email ou telefone
+  ///
+  /// [type] - 'email' ou 'phone'
+  /// Returns: Right(void) em caso de sucesso
+  /// Returns: Left(Failure) em caso de erro
+  Future<Either<Failure, void>> sendVerificationCodeV2(String type);
+
+  /// Verificar código de verificação V2
+  ///
+  /// [type] - 'email' ou 'phone'
+  /// [code] - código de 6 dígitos
+  /// Returns: Right(void) em caso de sucesso
+  /// Returns: Left(Failure) em caso de erro
+  Future<Either<Failure, void>> verifyCodeV2(String type, String code);
+
+  /// Obter status de verificação do usuário
+  ///
+  /// Returns: Right(Map) com emailVerified e phoneVerified
+  /// Returns: Left(Failure) em caso de erro
+  Future<Either<Failure, Map<String, bool>>> getVerificationStatus();
+
+  /// Completar perfil após login via Google OAuth
+  ///
+  /// Returns: Right(User) em caso de sucesso
+  /// Returns: Left(Failure) em caso de erro
+  Future<Either<Failure, User>> completeProfile({
+    required String cpf,
+    required String phoneNumber,
+    required String cep,
+    required String street,
+    required String number,
+    String? complement,
+    required String neighborhood,
+    required String city,
+    required String state,
+    String? birthDate,
   });
 }
 

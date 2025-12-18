@@ -112,6 +112,14 @@ class MockAuthRemoteDataSource extends _i1.Mock
     required String? password,
     required String? phoneNumber,
     String? cpf,
+    String? birthDate,
+    String? cep,
+    String? logradouro,
+    String? numero,
+    String? complemento,
+    String? bairro,
+    String? cidade,
+    String? estado,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -123,6 +131,14 @@ class MockAuthRemoteDataSource extends _i1.Mock
             #password: password,
             #phoneNumber: phoneNumber,
             #cpf: cpf,
+            #birthDate: birthDate,
+            #cep: cep,
+            #logradouro: logradouro,
+            #numero: numero,
+            #complemento: complemento,
+            #bairro: bairro,
+            #cidade: cidade,
+            #estado: estado,
           },
         ),
         returnValue: _i5.Future<_i2.AuthTokenModel>.value(_FakeAuthTokenModel_0(
@@ -136,6 +152,14 @@ class MockAuthRemoteDataSource extends _i1.Mock
               #password: password,
               #phoneNumber: phoneNumber,
               #cpf: cpf,
+              #birthDate: birthDate,
+              #cep: cep,
+              #logradouro: logradouro,
+              #numero: numero,
+              #complemento: complemento,
+              #bairro: bairro,
+              #cidade: cidade,
+              #estado: estado,
             },
           ),
         )),
@@ -250,6 +274,57 @@ class MockAuthRemoteDataSource extends _i1.Mock
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i3.UserModel> completeProfile({
+    required String? cpf,
+    required String? phoneNumber,
+    required String? cep,
+    required String? street,
+    required String? number,
+    String? complement,
+    required String? neighborhood,
+    required String? city,
+    required String? state,
+    String? birthDate,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #completeProfile,
+          [],
+          {
+            #cpf: cpf,
+            #phoneNumber: phoneNumber,
+            #cep: cep,
+            #street: street,
+            #number: number,
+            #complement: complement,
+            #neighborhood: neighborhood,
+            #city: city,
+            #state: state,
+            #birthDate: birthDate,
+          },
+        ),
+        returnValue: _i5.Future<_i3.UserModel>.value(_FakeUserModel_1(
+          this,
+          Invocation.method(
+            #completeProfile,
+            [],
+            {
+              #cpf: cpf,
+              #phoneNumber: phoneNumber,
+              #cep: cep,
+              #street: street,
+              #number: number,
+              #complement: complement,
+              #neighborhood: neighborhood,
+              #city: city,
+              #state: state,
+              #birthDate: birthDate,
+            },
+          ),
+        )),
+      ) as _i5.Future<_i3.UserModel>);
 }
 
 /// A class which mocks [AuthLocalDataSource].

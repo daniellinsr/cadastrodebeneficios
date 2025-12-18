@@ -11,15 +11,18 @@
 | Componente | Status | Progresso |
 |------------|--------|-----------|
 | Tela de Introdução | ✅ Completo | 100% |
+| Google Sign-In (Firebase) | ✅ Completo | 100% |
 | Formulário de Identificação | ✅ Completo | 100% |
 | Validadores | ✅ Completo | 100% |
 | Máscaras de Entrada | ✅ Completo | 100% |
+| Auto-save (Draft Service) | ✅ Completo | 100% |
+| Animações e Transições | ✅ Completo | 100% |
 | Formulário de Endereço | ⏳ Pendente | 0% |
 | Formulário de Senha | ⏳ Pendente | 0% |
 | Integração com Backend | ⏳ Pendente | 0% |
-| Testes Unitários | ⏳ Pendente | 0% |
+| Testes Unitários | ✅ Parcial | 50% |
 
-**Progresso Geral:** 50%
+**Progresso Geral:** 70%
 
 ---
 
@@ -260,6 +263,78 @@ Future<void> _openWhatsApp() async {
   );
   if (await canLaunchUrl(whatsappUrl)) {
     await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+  }
+}
+```
+
+**Google Sign-In (Firebase):**
+```dart
+Future<void> _handleGoogleSignup() async {
+  try {
+    // Autentica com Google usando Firebase Auth
+    final userCredential = await _firebaseAuthService.signInWithGoogle();
+
+    if (userCredential == null) {
+      // Usuário cancelou o login
+      return;
+    }
+
+    final user = userCredential.user;
+
+    // Mostra mensagem de sucesso
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Login com Google realizado com sucesso!\nBem-vindo, ${user.displayName ?? user.email}!',
+        ),
+        backgroundColor: AppColors.success,
+      ),
+    );
+
+    // TODO: Integrar com backend e navegar
+  } on FirebaseAuthException catch (e) {
+    // Tratamento de erros Firebase
+    // ...
+  }
+}
+```
+
+**Funcionalidades do Firebase Auth:**
+- ✅ Google Sign-In funcionando em **todas as plataformas** (Web, Android, iOS)
+- ✅ Na Web: Usa popup nativo do Google
+- ✅ No Mobile: Usa tela nativa do sistema operacional
+- ✅ Tratamento completo de erros Firebase
+- ✅ Loading state durante autenticação
+- ✅ Feedback visual ao usuário
+
+**Draft Service (Auto-save):**
+```dart
+@override
+void initState() {
+  super.initState();
+  _checkForDraft(); // Verifica se há rascunho salvo
+}
+
+Future<void> _checkForDraft() async {
+  final hasDraft = await _draftService.hasDraft();
+  if (!hasDraft) return;
+
+  final isExpired = await _draftService.isDraftExpired();
+  if (isExpired) {
+    await _draftService.clearDraft();
+    return;
+  }
+
+  final shouldContinue = await RegistrationDraftDialog.show(
+    context: context,
+    draftSummary: summary,
+    progressPercentage: progress,
+  );
+
+  if (shouldContinue == true) {
+    context.go('/registration/identification');
+  } else if (shouldContinue == false) {
+    await _draftService.clearDraft();
   }
 }
 ```
@@ -1524,11 +1599,13 @@ Future<void> _submitForm() async {
 
 ### Melhorias
 
-- [ ] Adicionar animações entre etapas
-- [ ] Implementar salvamento automático (draft)
-- [ ] Adicionar opção de login com Google
+- [x] Adicionar animações entre etapas ✅
+- [x] Implementar salvamento automático (draft) ✅
+- [x] Adicionar opção de login com Google ✅
 - [ ] Melhorar acessibilidade (a11y)
 - [ ] Adicionar suporte a dark mode
+
+**📄 Veja detalhes completos das melhorias implementadas em:** [MODULO5_MELHORIAS_IMPLEMENTADAS.md](MODULO5_MELHORIAS_IMPLEMENTADAS.md)
 
 ---
 
@@ -1540,6 +1617,8 @@ Future<void> _submitForm() async {
 - [TextInputFormatter](https://api.flutter.dev/flutter/services/TextInputFormatter-class.html)
 - [GoRouter](https://pub.dev/packages/go_router)
 - [animate_do](https://pub.dev/packages/animate_do)
+- [Firebase Authentication](https://firebase.google.com/docs/auth)
+- [FIREBASE_AUTH_IMPLEMENTADO.md](FIREBASE_AUTH_IMPLEMENTADO.md) - Documentação completa da implementação Firebase
 
 ### Padrões Brasileiros
 
@@ -1564,6 +1643,11 @@ Future<void> _submitForm() async {
 - [x] Adicionar animações
 - [x] Implementar navegação para identificação
 - [x] Adicionar botão WhatsApp
+- [x] Implementar Google Sign-In com Firebase
+- [x] Adicionar FirebaseAuthService
+- [x] Configurar Firebase para Web, Android e iOS
+- [x] Implementar auto-save (Draft Service)
+- [x] Adicionar dialog de recuperação de rascunho
 - [x] Design responsivo
 - [x] Testar em diferentes dispositivos
 

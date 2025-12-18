@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { OAuth2Client } from 'google-auth-library';
+import { auth as firebaseAuth } from '../config/firebase-admin';
 import pool from '../config/database';
 import { generateTokens, verifyRefreshToken, revokeRefreshToken } from '../utils/jwt.utils';
 import { AuthRequest } from '../types';
@@ -21,7 +22,8 @@ export const loginWithEmail = async (req: Request, res: Response): Promise<void>
     }
 
     const result = await pool.query(
-      `SELECT id, email, name, phone_number, password_hash, email_verified, phone_verified
+      `SELECT id, email, name, phone_number, cpf, birth_date, role, password_hash,
+              email_verified, phone_verified, profile_completion_status, created_at
        FROM users WHERE email = $1 AND deleted_at IS NULL`,
       [email]
     );
@@ -59,7 +61,13 @@ export const loginWithEmail = async (req: Request, res: Response): Promise<void>
       [user.id]
     );
 
-    const tokens = await generateTokens(user);
+    // Garantir que created_at seja uma string ISO
+    const userWithFormattedDate = {
+      ...user,
+      created_at: user.created_at ? new Date(user.created_at).toISOString() : new Date().toISOString(),
+    };
+
+    const tokens = await generateTokens(userWithFormattedDate);
 
     res.json(tokens);
   } catch (error) {
@@ -83,12 +91,36 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    const ticket = await googleClient.verifyIdToken({
-      idToken: id_token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    let payload: { sub?: string; email?: string; name?: string; email_verified?: boolean } | null = null;
 
-    const payload = ticket.getPayload();
+    // Tentar validar com Firebase Auth primeiro (tokens do Firebase)
+    try {
+      const decodedToken = await firebaseAuth.verifyIdToken(id_token);
+      payload = {
+        sub: decodedToken.uid,
+        email: decodedToken.email,
+        name: decodedToken.name,
+        email_verified: decodedToken.email_verified,
+      };
+      console.log('Token validado com Firebase Auth');
+    } catch (firebaseError) {
+      // Se falhar, tentar com Google OAuth2Client (tokens diretos do Google)
+      try {
+        const ticket = await googleClient.verifyIdToken({
+          idToken: id_token,
+          audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        payload = ticket.getPayload() || null;
+        console.log('Token validado com Google OAuth2Client');
+      } catch (googleError) {
+        console.error('Erro ao validar token:', { firebaseError, googleError });
+        res.status(401).json({
+          error: 'INVALID_TOKEN',
+          message: 'Invalid Google ID token',
+        });
+        return;
+      }
+    }
 
     if (!payload || !payload.email) {
       res.status(401).json({
@@ -99,7 +131,9 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
     }
 
     let result = await pool.query(
-      `SELECT id, email, name, phone_number FROM users
+      `SELECT id, email, name, phone_number, cpf, birth_date, role,
+              email_verified, phone_verified, profile_completion_status, created_at
+       FROM users
        WHERE google_id = $1 AND deleted_at IS NULL`,
       [payload.sub]
     );
@@ -108,7 +142,9 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
 
     if (result.rows.length === 0) {
       result = await pool.query(
-        `SELECT id, email, name, phone_number FROM users
+        `SELECT id, email, name, phone_number, cpf, birth_date, role,
+                email_verified, phone_verified, profile_completion_status, created_at
+         FROM users
          WHERE email = $1 AND deleted_at IS NULL`,
         [payload.email]
       );
@@ -122,9 +158,10 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
       } else {
         const userId = uuidv4();
         const insertResult = await pool.query(
-          `INSERT INTO users (id, email, name, google_id, email_verified, phone_number)
-           VALUES ($1, $2, $3, $4, true, '')
-           RETURNING id, email, name, phone_number`,
+          `INSERT INTO users (id, email, name, google_id, email_verified, phone_number, role, profile_completion_status)
+           VALUES ($1, $2, $3, $4, true, '', 'beneficiary', 'incomplete')
+           RETURNING id, email, name, phone_number, cpf, birth_date, role,
+                     email_verified, phone_verified, profile_completion_status, created_at`,
           [userId, payload.email, payload.name || '', payload.sub]
         );
         user = insertResult.rows[0];
@@ -138,7 +175,13 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
       [user.id]
     );
 
-    const tokens = await generateTokens(user);
+    // Garantir que created_at seja uma string ISO
+    const userWithFormattedDate = {
+      ...user,
+      created_at: user.created_at ? new Date(user.created_at).toISOString() : new Date().toISOString(),
+    };
+
+    const tokens = await generateTokens(userWithFormattedDate);
 
     res.json(tokens);
   } catch (error) {
@@ -152,7 +195,21 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, password, phone_number, cpf } = req.body;
+    const {
+      name,
+      email,
+      password,
+      phone_number,
+      cpf,
+      birth_date,
+      cep,
+      street,
+      number,
+      complement,
+      neighborhood,
+      city,
+      state,
+    } = req.body;
 
     if (!name || !email || !password || !phone_number) {
       res.status(400).json({
@@ -179,14 +236,41 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const userId = uuidv4();
 
     const result = await pool.query(
-      `INSERT INTO users (id, email, name, password_hash, phone_number, cpf, email_verified, phone_verified)
-       VALUES ($1, $2, $3, $4, $5, $6, false, false)
-       RETURNING id, email, name, phone_number`,
-      [userId, email, name, passwordHash, phone_number, cpf || null]
+      `INSERT INTO users (
+        id, email, name, password_hash, phone_number, cpf,
+        birth_date, cep, street, number, complement, neighborhood, city, state,
+        email_verified, role
+      )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, false, 'beneficiary')
+       RETURNING id, email, name, phone_number, cpf, birth_date, role,
+                 email_verified, phone_verified, profile_completion_status, created_at`,
+      [
+        userId,
+        email,
+        name,
+        passwordHash,
+        phone_number,
+        cpf || null,
+        birth_date || null,
+        cep || null,
+        street || null,
+        number || null,
+        complement || null,
+        neighborhood || null,
+        city || null,
+        state || null,
+      ]
     );
 
     const user = result.rows[0];
-    const tokens = await generateTokens(user);
+
+    // Garantir que created_at seja uma string ISO
+    const userWithFormattedDate = {
+      ...user,
+      created_at: user.created_at ? new Date(user.created_at).toISOString() : new Date().toISOString(),
+    };
+
+    const tokens = await generateTokens(userWithFormattedDate);
 
     res.status(201).json(tokens);
   } catch (error) {
@@ -221,7 +305,9 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
     }
 
     const result = await pool.query(
-      `SELECT id, email, name FROM users WHERE id = $1 AND deleted_at IS NULL`,
+      `SELECT id, email, name, phone_number, cpf, birth_date, role,
+              email_verified, phone_verified, profile_completion_status, created_at
+       FROM users WHERE id = $1 AND deleted_at IS NULL`,
       [userId]
     );
 
@@ -235,7 +321,15 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
 
     await revokeRefreshToken(refresh_token);
 
-    const tokens = await generateTokens(result.rows[0]);
+    const user = result.rows[0];
+
+    // Garantir que created_at seja uma string ISO
+    const userWithFormattedDate = {
+      ...user,
+      created_at: user.created_at ? new Date(user.created_at).toISOString() : new Date().toISOString(),
+    };
+
+    const tokens = await generateTokens(userWithFormattedDate);
 
     res.json(tokens);
   } catch (error) {
@@ -258,7 +352,8 @@ export const getCurrentUser = async (req: AuthRequest, res: Response): Promise<v
     }
 
     const result = await pool.query(
-      `SELECT id, email, name, phone_number, cpf, email_verified, phone_verified, created_at
+      `SELECT id, email, name, phone_number, cpf, birth_date, role,
+              email_verified, phone_verified, profile_completion_status, created_at
        FROM users WHERE id = $1 AND deleted_at IS NULL`,
       [req.user.id]
     );
@@ -292,6 +387,89 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
     res.status(204).send();
   } catch (error) {
     console.error('Logout error:', error);
+    res.status(500).json({
+      error: 'SERVER_ERROR',
+      message: 'Internal server error',
+    });
+  }
+};
+
+export const completeProfile = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        error: 'UNAUTHORIZED',
+        message: 'User not authenticated',
+      });
+      return;
+    }
+
+    const {
+      cpf,
+      phone_number,
+      birth_date,
+      cep,
+      street,
+      number,
+      complement,
+      neighborhood,
+      city,
+      state,
+    } = req.body;
+
+    // Validar campos obrigatórios
+    if (!cpf || !phone_number || !cep) {
+      res.status(400).json({
+        error: 'INVALID_REQUEST',
+        message: 'CPF, phone number, and CEP are required',
+      });
+      return;
+    }
+
+    // Atualizar perfil
+    const result = await pool.query(
+      `UPDATE users
+       SET cpf = $1, phone_number = $2, birth_date = $3,
+           cep = $4, street = $5, number = $6, complement = $7,
+           neighborhood = $8, city = $9, state = $10,
+           profile_completion_status = 'complete',
+           updated_at = NOW()
+       WHERE id = $11
+       RETURNING id, email, name, phone_number, cpf, birth_date, role,
+                 email_verified, phone_verified, profile_completion_status, created_at`,
+      [
+        cpf,
+        phone_number,
+        birth_date || null,
+        cep,
+        street,
+        number,
+        complement || null,
+        neighborhood,
+        city,
+        state,
+        req.user.id,
+      ]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({
+        error: 'USER_NOT_FOUND',
+        message: 'User not found',
+      });
+      return;
+    }
+
+    const user = result.rows[0];
+
+    const userWithFormattedDate = {
+      ...user,
+      created_at: user.created_at ? new Date(user.created_at).toISOString() : new Date().toISOString(),
+    };
+
+    res.json({ user: userWithFormattedDate });
+  } catch (error) {
+    console.error('Complete profile error:', error);
     res.status(500).json({
       error: 'SERVER_ERROR',
       message: 'Internal server error',

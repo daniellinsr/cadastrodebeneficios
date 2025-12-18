@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cadastro_beneficios/core/services/token_service.dart';
 import 'package:cadastro_beneficios/domain/usecases/auth/login_with_email_usecase.dart';
@@ -38,6 +39,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthForgotPasswordRequested>(_onForgotPasswordRequested);
     on<AuthUserUpdated>(_onUserUpdated);
+    on<AuthUserSet>(_onUserSet);
   }
 
   /// Handler: Verificar autenticação inicial
@@ -109,12 +111,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLoginWithGoogleRequested event,
     Emitter<AuthState> emit,
   ) async {
+    print('🔐 [AuthBloc] Iniciando login com Google...');
     emit(const AuthLoading());
 
     final result = await loginWithGoogleUseCase();
 
     await result.fold(
       (failure) async {
+        print('❌ [AuthBloc] Erro no login Google: ${failure.message}');
         emit(AuthError(
           message: failure.message,
           code: failure.code,
@@ -124,18 +128,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(const AuthUnauthenticated());
       },
       (authToken) async {
+        print('✅ [AuthBloc] Login Google bem-sucedido!');
+
         // Salvar token
         await tokenService.saveToken(authToken);
+        print('✅ [AuthBloc] Token salvo');
 
         // Buscar dados do usuário
+        print('🔍 [AuthBloc] Buscando dados do usuário...');
         final userResult = await getCurrentUserUseCase();
 
         userResult.fold(
-          (failure) => emit(AuthError(
-            message: failure.message,
-            code: failure.code,
-          )),
-          (user) => emit(AuthAuthenticated(user: user)),
+          (failure) {
+            print('❌ [AuthBloc] Erro ao buscar usuário: ${failure.message}');
+            emit(AuthError(
+              message: failure.message,
+              code: failure.code,
+            ));
+          },
+          (user) {
+            print('✅ [AuthBloc] Usuário carregado: ${user.email}');
+            print('   isProfileComplete: ${user.isProfileComplete}');
+            print('   profileCompletionStatus: ${user.profileCompletionStatus}');
+            print('📤 [AuthBloc] Emitindo AuthAuthenticated...');
+            emit(AuthAuthenticated(user: user));
+          },
         );
       },
     );
@@ -227,15 +244,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthUserUpdated event,
     Emitter<AuthState> emit,
   ) async {
+    debugPrint('🔄 [AuthBloc] AuthUserUpdated disparado');
+    debugPrint('🔍 [AuthBloc] Buscando dados do usuário atualizado...');
+
     // Recarregar dados do usuário
     final result = await getCurrentUserUseCase();
 
     result.fold(
-      (failure) => emit(AuthError(
-        message: failure.message,
-        code: failure.code,
-      )),
-      (user) => emit(AuthAuthenticated(user: user)),
+      (failure) {
+        debugPrint('❌ [AuthBloc] Erro ao buscar usuário: ${failure.message}');
+        emit(AuthError(
+          message: failure.message,
+          code: failure.code,
+        ));
+      },
+      (user) {
+        debugPrint('✅ [AuthBloc] Usuário carregado: ${user.email}');
+        debugPrint('   isProfileComplete: ${user.isProfileComplete}');
+        debugPrint('   profileCompletionStatus: ${user.profileCompletionStatus}');
+        debugPrint('📤 [AuthBloc] Emitindo AuthAuthenticated...');
+        emit(AuthAuthenticated(user: user));
+      },
     );
+  }
+
+  /// Handler: Definir usuário diretamente (sem buscar do backend)
+  void _onUserSet(
+    AuthUserSet event,
+    Emitter<AuthState> emit,
+  ) {
+    debugPrint('✅ [AuthBloc] AuthUserSet disparado');
+    debugPrint('✅ [AuthBloc] Usuário injetado diretamente: ${event.user.email}');
+    debugPrint('   isProfileComplete: ${event.user.isProfileComplete}');
+    debugPrint('   profileCompletionStatus: ${event.user.profileCompletionStatus}');
+    debugPrint('📤 [AuthBloc] Emitindo AuthAuthenticated...');
+    emit(AuthAuthenticated(user: event.user));
   }
 }

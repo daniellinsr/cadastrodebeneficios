@@ -15,6 +15,7 @@ class User extends Equatable {
   final DateTime? updatedAt;
   final bool isEmailVerified;
   final bool isPhoneVerified;
+  final ProfileCompletionStatus profileCompletionStatus;
 
   const User({
     required this.id,
@@ -28,7 +29,11 @@ class User extends Equatable {
     this.updatedAt,
     this.isEmailVerified = false,
     this.isPhoneVerified = false,
+    this.profileCompletionStatus = ProfileCompletionStatus.complete,
   });
+
+  /// Verifica se o perfil está completo
+  bool get isProfileComplete => profileCompletionStatus == ProfileCompletionStatus.complete;
 
   /// Cria cópia do usuário com campos atualizados
   User copyWith({
@@ -43,6 +48,7 @@ class User extends Equatable {
     DateTime? updatedAt,
     bool? isEmailVerified,
     bool? isPhoneVerified,
+    ProfileCompletionStatus? profileCompletionStatus,
   }) {
     return User(
       id: id ?? this.id,
@@ -56,6 +62,7 @@ class User extends Equatable {
       updatedAt: updatedAt ?? this.updatedAt,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
+      profileCompletionStatus: profileCompletionStatus ?? this.profileCompletionStatus,
     );
   }
 
@@ -72,6 +79,7 @@ class User extends Equatable {
         updatedAt,
         isEmailVerified,
         isPhoneVerified,
+        profileCompletionStatus,
       ];
 }
 
@@ -80,6 +88,12 @@ enum UserRole {
   admin,       // Administrador (acesso total)
   beneficiary, // Beneficiário (usuário padrão)
   partner,     // Parceiro (clínicas, farmácias, etc)
+}
+
+/// Status de completude do perfil
+enum ProfileCompletionStatus {
+  incomplete, // Perfil incompleto (faltam dados obrigatórios)
+  complete,   // Perfil completo (todos dados obrigatórios preenchidos)
 }
 
 /// Extensão para facilitar conversão e display
@@ -116,6 +130,29 @@ extension UserRoleExtension on UserRole {
         return UserRole.partner;
       default:
         return UserRole.beneficiary; // Default
+    }
+  }
+}
+
+/// Extensão para ProfileCompletionStatus
+extension ProfileCompletionStatusExtension on ProfileCompletionStatus {
+  String get value {
+    switch (this) {
+      case ProfileCompletionStatus.incomplete:
+        return 'incomplete';
+      case ProfileCompletionStatus.complete:
+        return 'complete';
+    }
+  }
+
+  static ProfileCompletionStatus fromString(String value) {
+    switch (value.toLowerCase()) {
+      case 'incomplete':
+        return ProfileCompletionStatus.incomplete;
+      case 'complete':
+        return ProfileCompletionStatus.complete;
+      default:
+        return ProfileCompletionStatus.complete; // Default seguro
     }
   }
 }

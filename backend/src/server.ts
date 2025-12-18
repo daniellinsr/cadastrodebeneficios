@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
+import verificationRoutes from './routes/verification.routes';
 import pool from './config/database';
 
 dotenv.config();
@@ -50,6 +51,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/verification', verificationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

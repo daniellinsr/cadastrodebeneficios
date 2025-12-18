@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:cadastro_beneficios/data/models/user_model.dart';
 
@@ -18,17 +19,24 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Box? _box;
 
   /// Abrir box do Hive
-  Future<Box> _getBox() async {
-    if (_box != null && _box!.isOpen) {
+  Future<Box?> _getBox() async {
+    try {
+      if (_box != null && _box!.isOpen) {
+        return _box!;
+      }
+      _box = await Hive.openBox(_boxName);
       return _box!;
+    } catch (e) {
+      // Se falhar ao abrir box (comum na web), retornar null
+      debugPrint('⚠️ Erro ao abrir Hive box: $e');
+      return null;
     }
-    _box = await Hive.openBox(_boxName);
-    return _box!;
   }
 
   @override
   Future<void> cacheUser(UserModel user) async {
     final box = await _getBox();
+    if (box == null) return; // Se não conseguir abrir box, ignorar cache
     await box.put(_userKey, user.toJson());
   }
 
@@ -36,6 +44,8 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<UserModel?> getCachedUser() async {
     try {
       final box = await _getBox();
+      if (box == null) return null; // Se não conseguir abrir box, retornar null
+
       final userData = box.get(_userKey);
 
       if (userData == null) {
@@ -52,6 +62,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> clearCache() async {
     final box = await _getBox();
+    if (box == null) return; // Se não conseguir abrir box, ignorar
     await box.clear();
   }
 }

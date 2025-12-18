@@ -1,15 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:cadastro_beneficios/core/theme/app_colors.dart';
 import 'package:cadastro_beneficios/core/theme/app_text_styles.dart';
 import 'package:cadastro_beneficios/core/theme/responsive_utils.dart';
+import 'package:cadastro_beneficios/core/services/registration_draft_service.dart';
+import 'package:cadastro_beneficios/presentation/widgets/registration_draft_dialog.dart';
+import 'package:cadastro_beneficios/presentation/bloc/auth/auth_bloc.dart';
+import 'package:cadastro_beneficios/presentation/bloc/auth/auth_event.dart';
+import 'package:cadastro_beneficios/presentation/bloc/auth/auth_state.dart';
+import 'package:cadastro_beneficios/presentation/widgets/feedback/feedback_widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Tela de introdução ao cadastro
 /// Primeira tela do fluxo de cadastro com mensagem de boas-vindas
-class RegistrationIntroPage extends StatelessWidget {
+class RegistrationIntroPage extends StatefulWidget {
   const RegistrationIntroPage({super.key});
+
+  @override
+  State<RegistrationIntroPage> createState() => _RegistrationIntroPageState();
+}
+
+class _RegistrationIntroPageState extends State<RegistrationIntroPage> {
+  final RegistrationDraftService _draftService = RegistrationDraftService();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkForDraft();
+  }
+
+  Future<void> _checkForDraft() async {
+    // Aguarda um momento para a tela carregar
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (!mounted) return;
+
+    final hasDraft = await _draftService.hasDraft();
+    if (!hasDraft) return;
+
+    final isExpired = await _draftService.isDraftExpired();
+    if (isExpired) {
+      await _draftService.clearDraft();
+      return;
+    }
+
+    final summary = await _draftService.getDraftSummary();
+    final progress = await _draftService.getDraftProgress();
+
+    if (!mounted || summary == null) return;
+
+    final shouldContinue = await RegistrationDraftDialog.show(
+      context: context,
+      draftSummary: summary,
+      progressPercentage: progress,
+    );
+
+    if (!mounted) return;
+
+    if (shouldContinue == true) {
+      // Continuar cadastro - vai para identificação que carregará os dados
+      context.go('/registration/identification');
+    } else if (shouldContinue == false) {
+      // Começar novo cadastro - limpa o rascunho
+      await _draftService.clearDraft();
+    }
+  }
 
   Future<void> _openWhatsApp() async {
     final Uri whatsappUrl = Uri.parse(
@@ -21,12 +78,47 @@ class RegistrationIntroPage extends StatelessWidget {
     }
   }
 
+  void _handleGoogleSignup() {
+    print('🔵 [RegistrationIntroPage] Botão Google clicado');
+    // Dispara evento no AuthBloc
+    context.read<AuthBloc>().add(const AuthLoginWithGoogleRequested());
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = ResponsiveUtils.isMobile(context);
 
-    return Scaffold(
-      body: Container(
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
+        print('🎯 [RegistrationIntroPage] Estado recebido: ${state.runtimeType}');
+
+        if (state is AuthError) {
+          print('❌ [RegistrationIntroPage] Erro: ${state.message}');
+          CustomSnackBar.show(
+            context,
+            message: state.message,
+            type: SnackBarType.error,
+          );
+        } else if (state is AuthAuthenticated) {
+          print('✅ [RegistrationIntroPage] AuthAuthenticated recebido!');
+          print('   User: ${state.user.email}');
+          print('   isProfileComplete: ${state.user.isProfileComplete}');
+
+          // Verificar se o perfil está completo
+          if (state.user.isProfileComplete) {
+            print('🔀 [RegistrationIntroPage] Redirecionando para /home...');
+            context.go('/home');
+          } else {
+            print('🔀 [RegistrationIntroPage] Redirecionando para /complete-profile...');
+            context.go('/complete-profile');
+          }
+        }
+      },
+      builder: (context, state) {
+        final isLoading = state is AuthLoading;
+
+        return Scaffold(
+          body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -171,6 +263,82 @@ class RegistrationIntroPage extends StatelessWidget {
 
                                 const SizedBox(height: 16),
 
+                                // Separador "ou"
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Divider(
+                                        color: Colors.white.withValues(alpha: 0.3),
+                                        thickness: 1,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      child: Text(
+                                        'ou',
+                                        style: AppTextStyles.bodyMedium.copyWith(
+                                          color: Colors.white.withValues(alpha: 0.8),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Divider(
+                                        color: Colors.white.withValues(alpha: 0.3),
+                                        thickness: 1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 16),
+
+                                // Botão Google (funciona em todas as plataformas com Firebase Auth)
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 56,
+                                  child: OutlinedButton(
+                                    onPressed: isLoading ? null : _handleGoogleSignup,
+                                    style: OutlinedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: AppColors.darkGray,
+                                      side: BorderSide.none,
+                                      elevation: 2,
+                                      shadowColor: Colors.black.withValues(alpha: 0.1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Image.asset(
+                                          'assets/icons/google_logo.png',
+                                          height: 24,
+                                          width: 24,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            // Fallback para ícone se imagem não estiver disponível
+                                            return const Icon(
+                                              Icons.login,
+                                              size: 24,
+                                              color: AppColors.primaryBlue,
+                                            );
+                                          },
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          'Cadastrar com Google',
+                                          style: AppTextStyles.button.copyWith(
+                                            color: AppColors.darkGray,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 16),
+
                                 // Botão WhatsApp
                                 SizedBox(
                                   width: double.infinity,
@@ -230,6 +398,8 @@ class RegistrationIntroPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+      },
     );
   }
 
