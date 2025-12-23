@@ -19,14 +19,14 @@ services:
           memory: 512M
         reservations:
           memory: 256M
+      placement:
+        constraints:
+          - node.role == manager
       labels:
         - "app=cadastro-beneficios"
         - "service=backend"
     ports:
-      - target: 3002
-        published: 3002
-        protocol: tcp
-        mode: host
+      - "3002:3002"
     environment:
       - NODE_ENV=production
       - PORT=3002
