@@ -4,16 +4,14 @@ FROM ghcr.io/cirruslabs/flutter:3.24.5 AS builder
 WORKDIR /app
 
 # Copiar pubspec para cache de dependências
-COPY pubspec.yaml pubspec.lock ./
+COPY pubspec.yaml ./
+COPY pubspec.lock* ./
 
 # Baixar dependências
 RUN flutter pub get
 
 # Copiar código fonte
 COPY . .
-
-# Copiar arquivo .env de produção
-COPY .env.production .env
 
 # Build da aplicação Flutter Web em modo release
 RUN flutter build web --release --web-renderer canvaskit

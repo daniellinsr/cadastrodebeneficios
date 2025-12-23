@@ -31,12 +31,38 @@ cp -r lib $BUILD_DIR/
 cp -r assets $BUILD_DIR/ 2>/dev/null || echo "Pasta assets não encontrada, continuando..."
 cp -r web $BUILD_DIR/
 cp pubspec.yaml $BUILD_DIR/
-cp pubspec.lock $BUILD_DIR/
+
+# Verificar e copiar pubspec.lock
+if [ -f pubspec.lock ]; then
+    cp pubspec.lock $BUILD_DIR/
+else
+    echo "⚠️  pubspec.lock não encontrado, será gerado no build..."
+fi
+
 cp analysis_options.yaml $BUILD_DIR/ 2>/dev/null || true
 cp Dockerfile.web $BUILD_DIR/Dockerfile
 cp nginx.conf $BUILD_DIR/
+
+# Copiar docker-stack.yml
 cp docker-stack-web.yml $BUILD_DIR/docker-stack.yml
-cp .env.production $BUILD_DIR/.env
+
+# Criar .env.production se não existir
+if [ ! -f .env.production ]; then
+    echo "📝 Criando .env.production..."
+    cat > $BUILD_DIR/.env << 'EOF'
+BACKEND_API_URL=http://77.37.41.41:3002
+BACKEND_API_TIMEOUT=30000
+GOOGLE_WEB_CLIENT_ID=403775802042-dr9hvctbr6qfildd767us0o057m3iu3m.apps.googleusercontent.com
+ENABLE_GOOGLE_LOGIN=true
+ENABLE_DEBUG_LOGS=false
+APP_NAME=Sistema de Cartão de Benefícios
+APP_VERSION=1.0.0
+ENVIRONMENT=production
+EOF
+else
+    cp .env.production $BUILD_DIR/.env
+fi
+
 cp .dockerignore $BUILD_DIR/
 
 echo -e "${GREEN}✅ Arquivos preparados${NC}"
@@ -107,6 +133,6 @@ echo -e "${GREEN}✅ Deploy concluído!${NC}"
 # Limpar diretório temporário
 rm -rf $BUILD_DIR
 
-echo -e "${GREEN}🎉 Frontend disponível em: http://${VPS_IP}${NC}"
-echo -e "${GREEN}🎉 Domínio: http://cadastro.helthcorp.com.br${NC}"
+echo -e "${GREEN}🎉 Frontend disponível em: http://${VPS_IP}:8080${NC}"
+echo -e "${GREEN}🎉 Domínio: http://cadastro.helthcorp.com.br:8080${NC}"
 echo -e "${YELLOW}💡 Para ver os logs: ssh ${VPS_USER}@${VPS_IP} 'docker service logs -f cadastro_web'${NC}"
