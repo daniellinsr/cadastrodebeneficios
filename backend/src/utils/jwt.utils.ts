@@ -24,7 +24,7 @@ export const generateTokens = async (user: {
   };
 
   const accessToken = jwt.sign(payload, jwtConfig.secret, {
-    expiresIn: jwtConfig.expiresIn as string | number,
+    expiresIn: jwtConfig.expiresIn as any,
   });
 
   const refreshToken = uuidv4();
