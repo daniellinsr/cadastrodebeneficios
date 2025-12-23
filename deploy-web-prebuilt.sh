@@ -29,7 +29,7 @@ fi
 
 # Build Flutter Web
 echo "Executando flutter build web..."
-flutter build web --release --web-renderer canvaskit
+flutter build web --release
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Erro no build do Flutter Web${NC}"
