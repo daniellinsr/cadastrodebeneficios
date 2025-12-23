@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  web:
+    image: cadastrodebeneficios-web:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - "app=cadastro-beneficios"
+        - "service=web"
+    ports:
+      - "80:80"
+    networks:
+      - cadastro-beneficios-network
+
+networks:
+  cadastro-beneficios-network:
+    external: true
+    name: cadastro_cadastro-beneficios-network

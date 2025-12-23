@@ -1,0 +1,37 @@
+# Estágio de build do Flutter Web
+FROM ghcr.io/cirruslabs/flutter:3.24.5 AS builder
+
+WORKDIR /app
+
+# Copiar pubspec para cache de dependências
+COPY pubspec.yaml pubspec.lock ./
+
+# Baixar dependências
+RUN flutter pub get
+
+# Copiar código fonte
+COPY . .
+
+# Copiar arquivo .env de produção
+COPY .env.production .env
+
+# Build da aplicação Flutter Web em modo release
+RUN flutter build web --release --web-renderer canvaskit
+
+# Estágio de produção com nginx
+FROM nginx:1.25-alpine
+
+# Copiar arquivos do build para o nginx
+COPY --from=builder /app/build/web /usr/share/nginx/html
+
+# Copiar configuração customizada do nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expor porta 80
+EXPOSE 80
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost/health || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

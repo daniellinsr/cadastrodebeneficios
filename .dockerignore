@@ -1,0 +1,49 @@
+# Build outputs
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env
+.env.local
+.env.development
+
+# Documentation
+*.md
+README.md
+LICENSE
+
+# Tests
+test/
+integration_test/
+coverage/
+
+# Android/iOS (não necessário para web)
+android/
+ios/
+macos/
+linux/
+windows/
+
+# Backend (não necessário para web)
+backend/
+
+# Logs
+*.log
+
+# Misc
+.DS_Store
+Thumbs.db
