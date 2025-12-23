@@ -49,6 +49,10 @@ fi
 # Adicionar Flutter ao PATH
 export PATH="$FLUTTER_HOME/bin:$PATH"
 
+# Corrigir permissões do Git para Flutter
+echo "🔧 Configurando permissões..."
+git config --global --add safe.directory /opt/flutter
+
 echo -e "${YELLOW}🔨 Fazendo build do Flutter Web...${NC}"
 
 # Ir para o diretório do código
