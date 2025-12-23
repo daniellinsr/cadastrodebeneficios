@@ -328,6 +328,68 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
       ) as _i4.Future<_i2.Either<_i5.Failure, void>>);
 
   @override
+  _i4.Future<_i2.Either<_i5.Failure, void>> sendVerificationCodeV2(
+          String? type) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #sendVerificationCodeV2,
+          [type],
+        ),
+        returnValue: _i4.Future<_i2.Either<_i5.Failure, void>>.value(
+            _FakeEither_0<_i5.Failure, void>(
+          this,
+          Invocation.method(
+            #sendVerificationCodeV2,
+            [type],
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i5.Failure, void>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, void>> verifyCodeV2(
+    String? type,
+    String? code,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #verifyCodeV2,
+          [
+            type,
+            code,
+          ],
+        ),
+        returnValue: _i4.Future<_i2.Either<_i5.Failure, void>>.value(
+            _FakeEither_0<_i5.Failure, void>(
+          this,
+          Invocation.method(
+            #verifyCodeV2,
+            [
+              type,
+              code,
+            ],
+          ),
+        )),
+      ) as _i4.Future<_i2.Either<_i5.Failure, void>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, Map<String, bool>>>
+      getVerificationStatus() => (super.noSuchMethod(
+            Invocation.method(
+              #getVerificationStatus,
+              [],
+            ),
+            returnValue:
+                _i4.Future<_i2.Either<_i5.Failure, Map<String, bool>>>.value(
+                    _FakeEither_0<_i5.Failure, Map<String, bool>>(
+              this,
+              Invocation.method(
+                #getVerificationStatus,
+                [],
+              ),
+            )),
+          ) as _i4.Future<_i2.Either<_i5.Failure, Map<String, bool>>>);
+
+  @override
   _i4.Future<_i2.Either<_i5.Failure, _i7.User>> completeProfile({
     required String? cpf,
     required String? phoneNumber,

@@ -2,31 +2,20 @@ import nodemailer from 'nodemailer';
 
 // Email configuration - using environment variables for security
 const createTransporter = () => {
-  // For development, use a test account (you can create one at https://ethereal.email/)
-  // For production, use real SMTP credentials
-
-  if (process.env.NODE_ENV === 'production') {
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-  }
-
-  // Development: Log email to console instead of sending
-  return nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false,
+  // Usar Gmail SMTP em todos os ambientes
+  const config = {
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true', // false para porta 587
     auth: {
-      user: process.env.SMTP_USER || 'ethereal.user@ethereal.email',
-      pass: process.env.SMTP_PASS || 'ethereal.password',
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
-  });
+  };
+
+  console.log(`📧 Configurando transporter de email: ${config.auth.user}`);
+
+  return nodemailer.createTransport(config);
 };
 
 /**

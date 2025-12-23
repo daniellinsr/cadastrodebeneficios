@@ -7,7 +7,9 @@ import pool from '../config/database';
 import { generateTokens, verifyRefreshToken, revokeRefreshToken } from '../utils/jwt.utils';
 import { AuthRequest } from '../types';
 
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+// Suportar múltiplos Client IDs (Android, Web, etc)
+const GOOGLE_CLIENT_IDS = process.env.GOOGLE_CLIENT_ID?.split(',').map(id => id.trim()) || [];
+const googleClient = new OAuth2Client();
 
 export const loginWithEmail = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -102,18 +104,31 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
         name: decodedToken.name,
         email_verified: decodedToken.email_verified,
       };
-      console.log('Token validado com Firebase Auth');
+      console.log('✅ Token validado com Firebase Auth');
     } catch (firebaseError) {
+      console.log('⚠️ Firebase Auth falhou, tentando Google OAuth2Client...');
       // Se falhar, tentar com Google OAuth2Client (tokens diretos do Google)
-      try {
-        const ticket = await googleClient.verifyIdToken({
-          idToken: id_token,
-          audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        payload = ticket.getPayload() || null;
-        console.log('Token validado com Google OAuth2Client');
-      } catch (googleError) {
-        console.error('Erro ao validar token:', { firebaseError, googleError });
+      // Tentar com cada Client ID configurado
+      let tokenValidated = false;
+
+      for (const clientId of GOOGLE_CLIENT_IDS) {
+        try {
+          const ticket = await googleClient.verifyIdToken({
+            idToken: id_token,
+            audience: clientId,
+          });
+          payload = ticket.getPayload() || null;
+          console.log(`✅ Token validado com Google OAuth2Client (audience: ${clientId})`);
+          tokenValidated = true;
+          break;
+        } catch (error) {
+          console.log(`⚠️ Falhou com audience ${clientId}`);
+          continue;
+        }
+      }
+
+      if (!tokenValidated) {
+        console.error('❌ Erro ao validar token com todos os métodos:', { firebaseError });
         res.status(401).json({
           error: 'INVALID_TOKEN',
           message: 'Invalid Google ID token',

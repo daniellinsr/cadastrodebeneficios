@@ -107,8 +107,14 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
           _isLoading = false;
         });
 
-        // Mostra diálogo de sucesso e redireciona
-        _showSuccessDialog();
+        // Obter email do serviço de registro
+        final email = sl.registrationService.email ?? '';
+
+        // Limpar dados do serviço de registro
+        sl.registrationService.clear();
+
+        // Redirecionar para tela de verificação de email
+        context.go('/email-verification', extra: email);
       } else {
         // Erro no registro
         setState(() {
@@ -140,48 +146,6 @@ class _RegistrationPasswordPageState extends State<RegistrationPasswordPage> {
     }
   }
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 32),
-            SizedBox(width: 12),
-            Text('Cadastro Concluído!'),
-          ],
-        ),
-        content: const Text(
-          'Seu cadastro foi realizado com sucesso!\n\nBem-vindo ao Sistema de Cartão de Benefícios!',
-          style: TextStyle(fontSize: 16),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // Limpa os dados do serviço de registro
-              sl.registrationService.clear();
-              // Navega para a home (usuário já está autenticado)
-              context.go('/home');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Ir para Home'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {

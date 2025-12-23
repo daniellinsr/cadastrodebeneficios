@@ -73,10 +73,12 @@ const startServer = async () => {
     await pool.query('SELECT NOW()');
     console.log('✅ Database connection successful');
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    // Escutar em 0.0.0.0 para aceitar conexões de qualquer IP da rede
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+      console.log(`🌐 Network access: http://192.168.100.9:${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+      console.log(`🔗 Health check: http://192.168.100.9:${PORT}/health`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

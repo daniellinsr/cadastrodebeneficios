@@ -44,6 +44,7 @@ class ServiceLocator {
       remoteDataSource: authRemoteDataSource,
       localDataSource: authLocalDataSource,
       tokenService: tokenService,
+      googleAuthService: googleAuthService,
     );
 
     // 6. Registration Service

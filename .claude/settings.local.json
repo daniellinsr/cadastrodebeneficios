@@ -32,7 +32,8 @@
       "Bash(timeout /t 3)",
       "Bash(tasklist:*)",
       "Bash(timeout 5 nc:*)",
-      "Bash(flutter devices:*)"
+      "Bash(flutter devices:*)",
+      "Bash(npm run test:registration:*)"
     ]
   }
 }

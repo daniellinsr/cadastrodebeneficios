@@ -214,6 +214,8 @@ class _RegistrationAddressPageState extends State<RegistrationAddressPage> {
   @override
   Widget build(BuildContext context) {
     final isMobile = ResponsiveUtils.isMobile(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final useColumnForAddress = screenWidth < 450;
 
     return Scaffold(
       body: Container(
@@ -423,46 +425,74 @@ class _RegistrationAddressPageState extends State<RegistrationAddressPage> {
 
                                     const SizedBox(height: 20),
 
-                                    // Cidade e Estado
-                                    Row(
-                                      children: [
-                                        // Cidade
-                                        Expanded(
-                                          flex: 3,
-                                          child: _buildTextField(
-                                            controller: _cidadeController,
-                                            label: 'Cidade',
-                                            icon: Icons.location_city,
-                                            keyboardType: TextInputType.text,
-                                            textCapitalization:
-                                                TextCapitalization.words,
-                                            validator: Validators.validateCidade,
-                                            hintText: 'Nome da cidade',
+                                    // Cidade e Estado - Layout responsivo
+                                    // < 450px: campos em linhas separadas
+                                    // >= 450px: campos na mesma linha
+                                    if (useColumnForAddress) ...[
+                                      // COLUMN: Campos em linhas separadas
+                                      _buildTextField(
+                                        controller: _cidadeController,
+                                        label: 'Cidade',
+                                        keyboardType: TextInputType.text,
+                                        textCapitalization:
+                                            TextCapitalization.words,
+                                        validator: Validators.validateCidade,
+                                        hintText: 'Nome da cidade',
+                                      ),
+                                      const SizedBox(height: 20),
+                                      _buildTextField(
+                                        controller: _estadoController,
+                                        label: 'UF',
+                                        keyboardType: TextInputType.text,
+                                        textCapitalization:
+                                            TextCapitalization.characters,
+                                        validator: Validators.validateEstado,
+                                        hintText: 'SP',
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.allow(
+                                              RegExp(r'[A-Za-z]')),
+                                          LengthLimitingTextInputFormatter(2),
+                                          UpperCaseTextFormatter(),
+                                        ],
+                                      ),
+                                    ] else ...[
+                                      // ROW: Campos na mesma linha
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 3,
+                                            child: _buildTextField(
+                                              controller: _cidadeController,
+                                              label: 'Cidade',
+                                              keyboardType: TextInputType.text,
+                                              textCapitalization:
+                                                  TextCapitalization.words,
+                                              validator: Validators.validateCidade,
+                                              hintText: 'Nome da cidade',
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        // Estado (UF)
-                                        Expanded(
-                                          flex: 1,
-                                          child: _buildTextField(
-                                            controller: _estadoController,
-                                            label: 'UF',
-                                            icon: Icons.flag_outlined,
-                                            keyboardType: TextInputType.text,
-                                            textCapitalization:
-                                                TextCapitalization.characters,
-                                            validator: Validators.validateEstado,
-                                            hintText: 'SP',
-                                            inputFormatters: [
-                                              FilteringTextInputFormatter.allow(
-                                                  RegExp(r'[A-Za-z]')),
-                                              LengthLimitingTextInputFormatter(2),
-                                              UpperCaseTextFormatter(),
-                                            ],
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            flex: 2,
+                                            child: _buildTextField(
+                                              controller: _estadoController,
+                                              label: 'UF',
+                                              keyboardType: TextInputType.text,
+                                              textCapitalization:
+                                                  TextCapitalization.characters,
+                                              validator: Validators.validateEstado,
+                                              hintText: 'SP',
+                                              inputFormatters: [
+                                                FilteringTextInputFormatter.allow(
+                                                    RegExp(r'[A-Za-z]')),
+                                                LengthLimitingTextInputFormatter(2),
+                                                UpperCaseTextFormatter(),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                        ],
+                                      ),
+                                    ],
 
                                     const SizedBox(height: 32),
 
@@ -637,7 +667,7 @@ class _RegistrationAddressPageState extends State<RegistrationAddressPage> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
+    IconData? icon,
     String? Function(String?)? validator,
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
@@ -655,7 +685,7 @@ class _RegistrationAddressPageState extends State<RegistrationAddressPage> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,
-        prefixIcon: Icon(icon, color: AppColors.primaryBlue),
+        prefixIcon: icon != null ? Icon(icon, color: AppColors.primaryBlue) : null,
         filled: true,
         fillColor: Colors.grey[50],
         border: OutlineInputBorder(

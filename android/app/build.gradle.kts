@@ -52,6 +52,6 @@ dependencies {
     // Firebase Authentication
     implementation("com.google.firebase:firebase-auth")
 
-    // Google Sign-In (já deve estar no pubspec.yaml)
-    // implementation("com.google.android.gms:play-services-auth:20.7.0")
+    // Google Sign-In - OBRIGATÓRIO para funcionar no APK
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
 }

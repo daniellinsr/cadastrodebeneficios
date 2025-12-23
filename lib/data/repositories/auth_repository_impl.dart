@@ -7,6 +7,7 @@ import 'package:cadastro_beneficios/domain/repositories/auth_repository.dart';
 import 'package:cadastro_beneficios/data/datasources/auth_remote_datasource.dart';
 import 'package:cadastro_beneficios/data/datasources/auth_local_datasource.dart';
 import 'package:cadastro_beneficios/core/services/token_service.dart';
+import 'package:cadastro_beneficios/core/services/google_auth_service.dart';
 
 /// Implementação do AuthRepository
 ///
@@ -15,11 +16,13 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final AuthLocalDataSource localDataSource;
   final TokenService tokenService;
+  final GoogleAuthService googleAuthService;
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
     required this.tokenService,
+    required this.googleAuthService,
   });
 
   @override
@@ -97,8 +100,16 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> logout() async {
     try {
+      // 1. Chamar logout no backend
       await remoteDataSource.logout();
+
+      // 2. Limpar cache local
       await localDataSource.clearCache();
+
+      // 3. CRÍTICO: Desconectar do Google Sign-In
+      // Isso garante que na próxima vez o usuário possa escolher outra conta
+      await googleAuthService.signOut();
+
       return const Right(null);
     } on DioException catch (e) {
       return Left(_handleDioError(e));

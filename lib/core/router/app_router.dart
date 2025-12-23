@@ -9,6 +9,7 @@ import 'package:cadastro_beneficios/presentation/pages/registration/registration
 import 'package:cadastro_beneficios/presentation/pages/registration/registration_identification_page.dart';
 import 'package:cadastro_beneficios/presentation/pages/registration/registration_address_page.dart';
 import 'package:cadastro_beneficios/presentation/pages/registration/registration_password_page.dart';
+import 'package:cadastro_beneficios/presentation/pages/auth/email_verification_page.dart';
 import 'package:cadastro_beneficios/presentation/pages/complete_profile_page.dart';
 import 'package:cadastro_beneficios/presentation/pages/home/home_page.dart';
 import 'package:cadastro_beneficios/core/router/page_transitions.dart';
@@ -169,6 +170,16 @@ class AppRouter {
           child: const RegistrationPasswordPage(),
           state: state,
         ),
+      ),
+
+      // Verificação de Email
+      GoRoute(
+        path: '/email-verification',
+        name: 'email-verification',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return EmailVerificationPage(email: email);
+        },
       ),
 
       // Lista de Parceiros (público)

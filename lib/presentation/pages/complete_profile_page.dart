@@ -59,12 +59,24 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
     try {
       final cep = _cepController.text.replaceAll('-', '');
+      debugPrint('🔍 Buscando CEP: $cep');
+
       final response = await http.get(
         Uri.parse('https://viacep.com.br/ws/$cep/json/'),
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('❌ Timeout ao buscar CEP');
+          throw Exception('Timeout ao buscar CEP');
+        },
       );
+
+      debugPrint('📡 Status da resposta: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final address = json.decode(response.body);
+        debugPrint('📍 Endereço encontrado: $address');
+
         if (address['erro'] == null && mounted) {
           setState(() {
             _streetController.text = address['logradouro'] ?? '';
@@ -72,13 +84,44 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             _cityController.text = address['localidade'] ?? '';
             _stateController.text = address['uf'] ?? '';
           });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('CEP encontrado!'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        } else {
+          debugPrint('❌ CEP não encontrado');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('CEP não encontrado'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      } else {
+        debugPrint('❌ Erro HTTP: ${response.statusCode}');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao buscar CEP: ${response.statusCode}'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       }
     } catch (e) {
+      debugPrint('❌ Exceção ao buscar CEP: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao buscar CEP'),
+          SnackBar(
+            content: Text('Erro ao buscar CEP: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -172,7 +215,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
+    IconData? icon,
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
@@ -192,7 +235,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,
-        prefixIcon: Icon(icon, color: AppColors.primaryBlue),
+        prefixIcon: icon != null ? Icon(icon, color: AppColors.primaryBlue) : null,
         suffixIcon: suffixIcon,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -246,6 +289,8 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   @override
   Widget build(BuildContext context) {
     final isMobile = ResponsiveUtils.isMobile(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final useColumnForAddress = screenWidth < 450;
 
     return Scaffold(
       body: Container(
@@ -470,36 +515,60 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
                                     const SizedBox(height: 20),
 
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          flex: 3,
-                                          child: _buildTextField(
-                                            controller: _cityController,
-                                            label: 'Cidade',
-                                            icon: Icons.location_city_outlined,
-                                            validator: Validators.validateCidade,
+                                    // Layout responsivo para Cidade e UF
+                                    // < 450px: campos em linhas separadas
+                                    // >= 450px: campos na mesma linha
+                                    if (useColumnForAddress) ...[
+                                      // COLUMN: Campos em linhas separadas
+                                      _buildTextField(
+                                        controller: _cityController,
+                                        label: 'Cidade',
+                                        validator: Validators.validateCidade,
+                                      ),
+                                      const SizedBox(height: 20),
+                                      _buildTextField(
+                                        controller: _stateController,
+                                        label: 'UF',
+                                        textCapitalization: TextCapitalization.characters,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.allow(
+                                            RegExp(r'[A-Za-z]'),
                                           ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          flex: 1,
-                                          child: _buildTextField(
-                                            controller: _stateController,
-                                            label: 'UF',
-                                            icon: Icons.map_outlined,
-                                            textCapitalization: TextCapitalization.characters,
-                                            inputFormatters: [
-                                              FilteringTextInputFormatter.allow(
-                                                RegExp(r'[A-Za-z]'),
-                                              ),
-                                              LengthLimitingTextInputFormatter(2),
-                                            ],
-                                            validator: Validators.validateEstado,
+                                          LengthLimitingTextInputFormatter(2),
+                                        ],
+                                        validator: Validators.validateEstado,
+                                      ),
+                                    ] else ...[
+                                      // ROW: Campos na mesma linha
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 3,
+                                            child: _buildTextField(
+                                              controller: _cityController,
+                                              label: 'Cidade',
+                                              validator: Validators.validateCidade,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            flex: 2,
+                                            child: _buildTextField(
+                                              controller: _stateController,
+                                              label: 'UF',
+                                              textCapitalization: TextCapitalization.characters,
+                                              inputFormatters: [
+                                                FilteringTextInputFormatter.allow(
+                                                  RegExp(r'[A-Za-z]'),
+                                                ),
+                                                LengthLimitingTextInputFormatter(2),
+                                              ],
+                                              validator: Validators.validateEstado,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
 
                                     const SizedBox(height: 32),
 

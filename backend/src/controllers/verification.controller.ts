@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { pool } from '../config/database';
+import pool from '../config/database';
 import { AuthRequest } from '../types';
 import { sendVerificationEmail } from '../services/email.service';
 
@@ -209,11 +209,17 @@ export const verifyCode = async (
     );
 
     // Update user verification status
-    const updateField = type === 'email' ? 'email_verified' : 'phone_verified';
-    await pool.query(
-      `UPDATE users SET ${updateField} = true WHERE id = $1`,
-      [userId]
-    );
+    if (type === 'email') {
+      await pool.query(
+        `UPDATE users SET email_verified = true, email_verified_at = NOW() WHERE id = $1`,
+        [userId]
+      );
+    } else {
+      await pool.query(
+        `UPDATE users SET phone_verified = true, phone_verified_at = NOW() WHERE id = $1`,
+        [userId]
+      );
+    }
 
     // Get updated user
     const userResult = await pool.query(

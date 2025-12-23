@@ -5,6 +5,7 @@ import 'package:mockito/mockito.dart';
 import 'package:dio/dio.dart';
 import 'package:cadastro_beneficios/core/errors/failures.dart';
 import 'package:cadastro_beneficios/core/services/token_service.dart';
+import 'package:cadastro_beneficios/core/services/google_auth_service.dart';
 import 'package:cadastro_beneficios/data/datasources/auth_remote_datasource.dart';
 import 'package:cadastro_beneficios/data/datasources/auth_local_datasource.dart';
 import 'package:cadastro_beneficios/data/repositories/auth_repository_impl.dart';
@@ -17,21 +18,25 @@ import 'auth_repository_impl_test.mocks.dart';
   AuthRemoteDataSource,
   AuthLocalDataSource,
   TokenService,
+  GoogleAuthService,
 ])
 void main() {
   late AuthRepositoryImpl repository;
   late MockAuthRemoteDataSource mockRemoteDataSource;
   late MockAuthLocalDataSource mockLocalDataSource;
   late MockTokenService mockTokenService;
+  late MockGoogleAuthService mockGoogleAuthService;
 
   setUp(() {
     mockRemoteDataSource = MockAuthRemoteDataSource();
     mockLocalDataSource = MockAuthLocalDataSource();
     mockTokenService = MockTokenService();
+    mockGoogleAuthService = MockGoogleAuthService();
     repository = AuthRepositoryImpl(
       remoteDataSource: mockRemoteDataSource,
       localDataSource: mockLocalDataSource,
       tokenService: mockTokenService,
+      googleAuthService: mockGoogleAuthService,
     );
   });
 

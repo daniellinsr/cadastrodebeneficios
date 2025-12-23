@@ -5,6 +5,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
 
+import 'package:cadastro_beneficios/core/services/google_auth_service.dart'
+    as _i10;
 import 'package:cadastro_beneficios/core/services/token_service.dart' as _i8;
 import 'package:cadastro_beneficios/data/datasources/auth_local_datasource.dart'
     as _i7;
@@ -15,7 +17,9 @@ import 'package:cadastro_beneficios/data/models/user_model.dart' as _i3;
 import 'package:cadastro_beneficios/domain/entities/auth_token.dart' as _i9;
 import 'package:cadastro_beneficios/domain/repositories/auth_repository.dart'
     as _i6;
+import 'package:google_sign_in/google_sign_in.dart' as _i12;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i11;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -325,6 +329,42 @@ class MockAuthRemoteDataSource extends _i1.Mock
           ),
         )),
       ) as _i5.Future<_i3.UserModel>);
+
+  @override
+  _i5.Future<void> sendVerificationCodeV2(String? type) => (super.noSuchMethod(
+        Invocation.method(
+          #sendVerificationCodeV2,
+          [type],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> verifyCodeV2(
+    String? type,
+    String? code,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #verifyCodeV2,
+          [
+            type,
+            code,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<Map<String, bool>> getVerificationStatus() => (super.noSuchMethod(
+        Invocation.method(
+          #getVerificationStatus,
+          [],
+        ),
+        returnValue: _i5.Future<Map<String, bool>>.value(<String, bool>{}),
+      ) as _i5.Future<Map<String, bool>>);
 }
 
 /// A class which mocks [AuthLocalDataSource].
@@ -434,6 +474,69 @@ class MockTokenService extends _i1.Mock implements _i8.TokenService {
   _i5.Future<void> deleteAll() => (super.noSuchMethod(
         Invocation.method(
           #deleteAll,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+}
+
+/// A class which mocks [GoogleAuthService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGoogleAuthService extends _i1.Mock implements _i10.GoogleAuthService {
+  MockGoogleAuthService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<String> signIn() => (super.noSuchMethod(
+        Invocation.method(
+          #signIn,
+          [],
+        ),
+        returnValue: _i5.Future<String>.value(_i11.dummyValue<String>(
+          this,
+          Invocation.method(
+            #signIn,
+            [],
+          ),
+        )),
+      ) as _i5.Future<String>);
+
+  @override
+  _i5.Future<void> signOut() => (super.noSuchMethod(
+        Invocation.method(
+          #signOut,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<bool> isSignedIn() => (super.noSuchMethod(
+        Invocation.method(
+          #isSignedIn,
+          [],
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
+  _i5.Future<_i12.GoogleSignInAccount?> getCurrentAccount() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCurrentAccount,
+          [],
+        ),
+        returnValue: _i5.Future<_i12.GoogleSignInAccount?>.value(),
+      ) as _i5.Future<_i12.GoogleSignInAccount?>);
+
+  @override
+  _i5.Future<void> disconnect() => (super.noSuchMethod(
+        Invocation.method(
+          #disconnect,
           [],
         ),
         returnValue: _i5.Future<void>.value(),

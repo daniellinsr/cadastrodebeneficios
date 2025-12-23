@@ -51,6 +51,7 @@ void main() {
     mockDioClient = MockDioClient();
     mockSecureStorage = MockFlutterSecureStorage();
     mockLocalDataSource = MockAuthLocalDataSource();
+    mockGoogleAuthService = MockGoogleAuthService();
 
     // Configurar TokenService com mock
     tokenService = TokenService(secureStorage: mockSecureStorage);
@@ -63,6 +64,7 @@ void main() {
       remoteDataSource: remoteDataSource,
       localDataSource: mockLocalDataSource,
       tokenService: tokenService,
+      googleAuthService: mockGoogleAuthService,
     );
 
     // Mock LocalDataSource - retornar null por padrão (sem cache)
@@ -70,8 +72,8 @@ void main() {
     when(mockLocalDataSource.cacheUser(any)).thenAnswer((_) async => {});
     when(mockLocalDataSource.clearCache()).thenAnswer((_) async => {});
 
-    // Configurar mocks adicionais
-    mockGoogleAuthService = MockGoogleAuthService();
+    // Mock GoogleAuthService - configurar signOut
+    when(mockGoogleAuthService.signOut()).thenAnswer((_) async => {});
 
     // Configurar UseCases
     loginWithEmailUseCase = LoginWithEmailUseCase(authRepository);
