@@ -31,7 +31,7 @@ cp package*.json $BUILD_DIR/
 cp tsconfig.json $BUILD_DIR/
 cp Dockerfile $BUILD_DIR/
 cp .dockerignore $BUILD_DIR/
-cp docker-compose.yml $BUILD_DIR/
+cp docker-stack.yml $BUILD_DIR/
 cp .env.production $BUILD_DIR/.env
 
 echo -e "${GREEN}✅ Arquivos preparados${NC}"
@@ -56,43 +56,51 @@ echo -e "${YELLOW}🐳 Fazendo build e iniciando containers no servidor...${NC}"
 ssh $VPS_USER@$VPS_IP << 'ENDSSH'
 cd /opt/apps/cadastro/cadastrodebeneficios
 
-# Parar APENAS o container do cadastro-beneficios
-echo "⏹️  Parando container cadastro-beneficios-backend..."
-docker-compose stop backend || true
-docker-compose rm -f backend || true
+# Exportar variáveis de ambiente do .env
+export $(grep -v '^#' .env | xargs)
 
-# Remover APENAS a imagem antiga deste projeto (não todas as imagens)
-echo "🗑️  Removendo imagem antiga do cadastro-beneficios..."
-OLD_IMAGE=$(docker images cadastrodebeneficios-backend -q)
-if [ ! -z "$OLD_IMAGE" ]; then
-  docker rmi -f $OLD_IMAGE || true
+# Build da nova imagem
+echo "🔨 Fazendo build da nova imagem..."
+docker build -t cadastrodebeneficios-backend:latest .
+
+# Verificar se o stack já existe
+STACK_EXISTS=$(docker stack ls | grep cadastro || true)
+
+if [ ! -z "$STACK_EXISTS" ]; then
+  echo "⏹️  Removendo stack antigo do cadastro-beneficios..."
+  docker stack rm cadastro
+  echo "⏳ Aguardando stack ser removido completamente..."
+  sleep 10
 fi
 
-# Build da nova imagem com nome específico
-echo "🔨 Fazendo build da nova imagem..."
-docker-compose build --no-cache backend
-
-# Iniciar APENAS o container do cadastro-beneficios
-echo "▶️  Iniciando container cadastro-beneficios-backend..."
-docker-compose up -d backend
+# Deploy do novo stack
+echo "🚀 Fazendo deploy do stack cadastro-beneficios..."
+docker stack deploy -c docker-stack.yml cadastro
 
 # Aguardar alguns segundos
-sleep 5
+echo "⏳ Aguardando serviços iniciarem..."
+sleep 10
 
-# Verificar status APENAS deste container
-echo "📊 Status do container cadastro-beneficios:"
-docker-compose ps backend
+# Verificar status do stack
+echo "📊 Status do stack cadastro:"
+docker stack ps cadastro
 
-# Verificar logs APENAS deste container
-echo "📋 Últimos logs do cadastro-beneficios:"
-docker-compose logs --tail=50 backend
+# Verificar serviços
+echo "📊 Serviços do stack:"
+docker service ls | grep cadastro
 
-# Verificar se está rodando
-echo "🔍 Verificando se o container está rodando..."
-if docker-compose ps backend | grep -q "Up"; then
-  echo "✅ Container cadastro-beneficios-backend está rodando!"
+# Verificar logs do serviço
+echo "📋 Últimos logs do cadastro_backend:"
+docker service logs --tail=50 cadastro_backend || true
+
+# Verificar se o serviço está rodando
+echo "🔍 Verificando se o serviço está rodando..."
+SERVICE_STATUS=$(docker service ls | grep cadastro_backend | awk '{print $4}')
+if [[ "$SERVICE_STATUS" == *"1/1"* ]]; then
+  echo "✅ Serviço cadastro_backend está rodando!"
 else
-  echo "❌ ERRO: Container não está rodando. Verificar logs acima."
+  echo "⚠️  Status do serviço: $SERVICE_STATUS"
+  echo "Aguarde alguns segundos para o serviço inicializar completamente..."
 fi
 ENDSSH
 
