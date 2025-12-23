@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: cadastrodebeneficios-backend:latest
     container_name: cadastro-beneficios-backend
     restart: unless-stopped
     ports:
@@ -33,7 +32,7 @@ services:
       - SMTP_FROM=${SMTP_FROM}
       - FRONTEND_URL=${FRONTEND_URL}
     networks:
-      - cadastro-beneficios-network
+      - cadastro-network
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3002/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
       interval: 30s
@@ -42,6 +41,5 @@ services:
       start_period: 40s
 
 networks:
-  cadastro-beneficios-network:
-    name: cadastro-beneficios-network
+  cadastro-network:
     driver: bridge

@@ -1,5 +1,11 @@
 # 🚀 Guia Rápido de Deploy
 
+## ⚠️ IMPORTANTE - Servidor Compartilhado
+
+Este servidor tem OUTRAS APLICAÇÕES rodando. Os scripts foram configurados para afetar APENAS o container `cadastro-beneficios-backend`. Não use comandos genéricos como `docker stop $(docker ps -q)` ou `docker-compose down` sem especificar o serviço.
+
+**Diretório da aplicação**: `/opt/apps/cadastro/cadastrodebeneficios`
+
 ## Deploy em 5 Minutos
 
 ### Opção 1: Usando PowerShell (Windows)
@@ -39,12 +45,12 @@ cp .env.production deploy-build\.env
 ssh root@77.37.41.41
 
 # No servidor, criar diretório
-mkdir -p /opt/cadastro-beneficios
+mkdir -p /opt/apps/cadastro/cadastrodebeneficios
 exit
 
 # Enviar arquivos
 cd deploy-build
-scp -r * root@77.37.41.41:/opt/cadastro-beneficios/
+scp -r * root@77.37.41.41:/opt/apps/cadastro/cadastrodebeneficios/
 ```
 
 #### 3️⃣ Iniciar no servidor
@@ -54,18 +60,19 @@ scp -r * root@77.37.41.41:/opt/cadastro-beneficios/
 ssh root@77.37.41.41
 
 # Ir para o diretório
-cd /opt/cadastro-beneficios
+cd /opt/apps/cadastro/cadastrodebeneficios
 
-# Parar versão antiga (se existir)
-docker-compose down
+# Parar APENAS o container do cadastro (NÃO afeta outras aplicações)
+docker-compose stop backend
+docker-compose rm -f backend
 
-# Construir e iniciar
-docker-compose build
-docker-compose up -d
+# Construir e iniciar APENAS o cadastro-beneficios
+docker-compose build --no-cache backend
+docker-compose up -d backend
 
-# Verificar
-docker-compose ps
-docker-compose logs -f
+# Verificar APENAS este container
+docker-compose ps backend
+docker-compose logs -f backend
 ```
 
 ## ✅ Verificar se funcionou
@@ -87,31 +94,40 @@ Abra: http://77.37.41.41:3002/health
 
 ## 🔧 Comandos Úteis
 
-### Ver logs
+### Ver logs (APENAS cadastro-beneficios)
 ```bash
 ssh root@77.37.41.41
-cd /opt/cadastro-beneficios
-docker-compose logs -f
+cd /opt/apps/cadastro/cadastrodebeneficios
+docker-compose logs -f backend
 ```
 
-### Parar backend
+### Parar backend (APENAS cadastro-beneficios)
 ```bash
-docker-compose down
+docker-compose stop backend
 ```
 
-### Reiniciar backend
+### Reiniciar backend (APENAS cadastro-beneficios)
 ```bash
-docker-compose restart
+docker-compose restart backend
 ```
 
-### Atualizar código
+### Atualizar código (APENAS cadastro-beneficios)
 ```bash
 # 1. Envie novos arquivos
 # 2. No servidor:
-cd /opt/cadastro-beneficios
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
+cd /opt/apps/cadastro/cadastrodebeneficios
+docker-compose stop backend
+docker-compose rm -f backend
+docker-compose build --no-cache backend
+docker-compose up -d backend
+```
+
+### ⚠️ NUNCA USE (afetaria TODAS as aplicações):
+```bash
+# ❌ NÃO FAÇA ISSO:
+docker-compose down  # Para TODOS os serviços do docker-compose
+docker stop $(docker ps -q)  # Para TODOS os containers do servidor
+docker system prune -a  # Remove TODAS as imagens
 ```
 
 ## 🌐 URLs Importantes

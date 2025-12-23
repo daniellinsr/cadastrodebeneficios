@@ -7,7 +7,7 @@ Write-Host "🚀 Iniciando deploy do backend..." -ForegroundColor Green
 # Configurações
 $VPS_IP = "77.37.41.41"
 $VPS_USER = "root"
-$DEPLOY_PATH = "/opt/cadastro-beneficios"
+$DEPLOY_PATH = "/opt/apps/cadastro/cadastrodebeneficios"
 
 Write-Host "📦 Preparando arquivos para deploy..." -ForegroundColor Yellow
 
@@ -41,13 +41,14 @@ Write-Host "3. No seu computador, envie os arquivos com SCP:" -ForegroundColor C
 Write-Host "   cd $BUILD_DIR" -ForegroundColor White
 Write-Host "   scp -r * $VPS_USER@${VPS_IP}:$DEPLOY_PATH/" -ForegroundColor White
 Write-Host ""
-Write-Host "4. De volta ao servidor, faça o deploy:" -ForegroundColor Cyan
+Write-Host "4. De volta ao servidor, faça o deploy (APENAS do cadastro-beneficios):" -ForegroundColor Cyan
 Write-Host "   cd $DEPLOY_PATH" -ForegroundColor White
-Write-Host "   docker-compose down || true" -ForegroundColor White
-Write-Host "   docker-compose build --no-cache" -ForegroundColor White
-Write-Host "   docker-compose up -d" -ForegroundColor White
-Write-Host "   docker-compose ps" -ForegroundColor White
-Write-Host "   docker-compose logs --tail=50" -ForegroundColor White
+Write-Host "   docker-compose stop backend" -ForegroundColor White
+Write-Host "   docker-compose rm -f backend" -ForegroundColor White
+Write-Host "   docker-compose build --no-cache backend" -ForegroundColor White
+Write-Host "   docker-compose up -d backend" -ForegroundColor White
+Write-Host "   docker-compose ps backend" -ForegroundColor White
+Write-Host "   docker-compose logs --tail=50 backend" -ForegroundColor White
 Write-Host ""
 Write-Host "🎉 Após o deploy, o backend estará disponível em:" -ForegroundColor Green
 Write-Host "   http://$VPS_IP:3002" -ForegroundColor Cyan

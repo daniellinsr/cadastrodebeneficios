@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Configurações
 VPS_IP="77.37.41.41"
 VPS_USER="root"  # Altere se necessário
-DEPLOY_PATH="/opt/cadastro-beneficios"
+DEPLOY_PATH="/opt/apps/cadastro/cadastrodebeneficios"
 APP_NAME="cadastro-beneficios-backend"
 
 echo -e "${YELLOW}📦 Preparando arquivos para deploy...${NC}"
@@ -54,34 +54,46 @@ echo -e "${YELLOW}🐳 Fazendo build e iniciando containers no servidor...${NC}"
 
 # Executar comandos no servidor
 ssh $VPS_USER@$VPS_IP << 'ENDSSH'
-cd /opt/cadastro-beneficios
+cd /opt/apps/cadastro/cadastrodebeneficios
 
-# Parar containers existentes
-echo "⏹️  Parando containers antigos..."
-docker-compose down || true
+# Parar APENAS o container do cadastro-beneficios
+echo "⏹️  Parando container cadastro-beneficios-backend..."
+docker-compose stop backend || true
+docker-compose rm -f backend || true
 
-# Remover imagens antigas
-echo "🗑️  Removendo imagens antigas..."
-docker image prune -f
+# Remover APENAS a imagem antiga deste projeto (não todas as imagens)
+echo "🗑️  Removendo imagem antiga do cadastro-beneficios..."
+OLD_IMAGE=$(docker images cadastrodebeneficios-backend -q)
+if [ ! -z "$OLD_IMAGE" ]; then
+  docker rmi -f $OLD_IMAGE || true
+fi
 
-# Build da nova imagem
+# Build da nova imagem com nome específico
 echo "🔨 Fazendo build da nova imagem..."
-docker-compose build --no-cache
+docker-compose build --no-cache backend
 
-# Iniciar containers
-echo "▶️  Iniciando containers..."
-docker-compose up -d
+# Iniciar APENAS o container do cadastro-beneficios
+echo "▶️  Iniciando container cadastro-beneficios-backend..."
+docker-compose up -d backend
 
 # Aguardar alguns segundos
 sleep 5
 
-# Verificar status
-echo "📊 Status dos containers:"
-docker-compose ps
+# Verificar status APENAS deste container
+echo "📊 Status do container cadastro-beneficios:"
+docker-compose ps backend
 
-# Verificar logs
-echo "📋 Últimos logs:"
-docker-compose logs --tail=50
+# Verificar logs APENAS deste container
+echo "📋 Últimos logs do cadastro-beneficios:"
+docker-compose logs --tail=50 backend
+
+# Verificar se está rodando
+echo "🔍 Verificando se o container está rodando..."
+if docker-compose ps backend | grep -q "Up"; then
+  echo "✅ Container cadastro-beneficios-backend está rodando!"
+else
+  echo "❌ ERRO: Container não está rodando. Verificar logs acima."
+fi
 ENDSSH
 
 echo -e "${GREEN}✅ Deploy concluído!${NC}"
