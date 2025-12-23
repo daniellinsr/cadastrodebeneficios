@@ -89,6 +89,39 @@ rm -rf build/web
 echo "📦 Instalando dependências..."
 flutter pub get
 
+# Gerar arquivos necessários com build_runner
+echo "🔄 Gerando arquivos com build_runner..."
+flutter pub run build_runner build --delete-conflicting-outputs
+
+# Configurar Firebase (criar arquivo vazio se não existir)
+if [ ! -f "lib/firebase_options.dart" ]; then
+    echo "📝 Criando firebase_options.dart vazio..."
+    mkdir -p lib
+    cat > lib/firebase_options.dart << 'FIREBASEEOF'
+// Firebase Options - Placeholder for Web
+import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
+
+class DefaultFirebaseOptions {
+  static FirebaseOptions get currentPlatform {
+    if (kIsWeb) {
+      return web;
+    }
+    throw UnsupportedError('DefaultFirebaseOptions are not supported for this platform.');
+  }
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDummy',
+    appId: '1:000000000000:web:0000000000000000000000',
+    messagingSenderId: '000000000000',
+    projectId: 'cadastro-beneficios',
+    authDomain: 'cadastro-beneficios.firebaseapp.com',
+    storageBucket: 'cadastro-beneficios.appspot.com',
+  );
+}
+FIREBASEEOF
+fi
+
 # Build
 echo "🔨 Compilando Flutter Web..."
 flutter build web --release
