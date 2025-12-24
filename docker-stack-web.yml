@@ -16,10 +16,17 @@ services:
           memory: 256M
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.cadastro-web.rule=Host(\`cadastro.helthcorp.com.br\`)"
-        - "traefik.http.routers.cadastro-web.entrypoints=web"
-        - "traefik.http.services.cadastro-web.loadbalancer.server.port=80"
         - "traefik.docker.network=web-swarm"
+        - "traefik.http.routers.cadastro-web.rule=Host(`cadastro.helthcorp.com.br`)"
+        - "traefik.http.routers.cadastro-web.entrypoints=websecure"
+        - "traefik.http.routers.cadastro-web.tls=true"
+        - "traefik.http.routers.cadastro-web.tls.certresolver=lets-encrypt"
+        - "traefik.http.services.cadastro-web.loadbalancer.server.port=80"
+        - "traefik.http.middlewares.cadastro-redirect.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.cadastro-redirect.redirectscheme.permanent=true"
+        - "traefik.http.routers.cadastro-http.rule=Host(`cadastro.helthcorp.com.br`)"
+        - "traefik.http.routers.cadastro-http.entrypoints=web"
+        - "traefik.http.routers.cadastro-http.middlewares=cadastro-redirect"
     networks:
       - cadastro-beneficios-network
       - web-swarm
