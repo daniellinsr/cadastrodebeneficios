@@ -9,29 +9,24 @@ services:
         condition: any
         delay: 5s
         max_attempts: 5
-        window: 120s
-      update_config:
-        parallelism: 1
-        delay: 10s
-        failure_action: continue
-        monitor: 30s
       resources:
         limits:
           memory: 512M
         reservations:
           memory: 256M
-      placement:
-        constraints:
-          - node.role == manager
       labels:
-        - "app=cadastro-beneficios"
-        - "service=web"
-    ports:
-      - "8080:80"
+        - "traefik.enable=true"
+        - "traefik.http.routers.cadastro-web.rule=Host(\`cadastro.helthcorp.com.br\`)"
+        - "traefik.http.routers.cadastro-web.entrypoints=web"
+        - "traefik.http.services.cadastro-web.loadbalancer.server.port=80"
+        - "traefik.docker.network=web-swarm"
     networks:
       - cadastro-beneficios-network
+      - web-swarm
 
 networks:
   cadastro-beneficios-network:
     external: true
     name: cadastro_cadastro-beneficios-network
+  web-swarm:
+    external: true
