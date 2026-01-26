@@ -33,7 +33,14 @@
       "Bash(tasklist:*)",
       "Bash(timeout 5 nc:*)",
       "Bash(flutter devices:*)",
-      "Bash(npm run test:registration:*)"
+      "Bash(npm run test:registration:*)",
+      "Bash(ssh root@77.37.41.41 \"curl -s https://cadastro.helthcorp.com.br/flutter.js | head -5\")",
+      "Bash(ssh root@77.37.41.41 \"curl -I https://cadastro.helthcorp.com.br/main.dart.js 2>&1 | grep -E ''HTTP|content-type|content-length''\")",
+      "Bash(ssh root@77.37.41.41 \"cd /opt/apps/cadastro/cadastrodebeneficios-web && docker build --no-cache -f Dockerfile.simple -t cadastrodebeneficios-web:latest .\")",
+      "Bash(ssh:*)",
+      "Bash(scp .env root@77.37.41.41:/opt/apps/cadastro/cadastrodebeneficios-web/.env)",
+      "Bash(scp:*)",
+      "Bash(sshpass -p 'iRy8D6fhrBD6AKJF@n1F' ssh -o StrictHostKeyChecking=no root@77.37.41.41 \"cd /opt/apps/cadastro/cadastrodebeneficios-web && cat docker-stack-web.yml\")"
     ]
   }
 }

@@ -1,16 +1,49 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logger/logger.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
+
+@JS('ENV_CONFIG')
+external JSObject? get envConfig;
 
 /// Configuração de variáveis de ambiente
 ///
-/// Carrega e fornece acesso às variáveis definidas no arquivo .env
+/// Carrega e fornece acesso às variáveis definidas no arquivo .env (mobile/desktop)
+/// ou window.ENV_CONFIG (web)
 class EnvConfig {
   static final Logger _logger = Logger();
-  /// Carrega as variáveis de ambiente do arquivo .env
+
+  /// Carrega as variáveis de ambiente
   ///
   /// Deve ser chamado no main() antes de runApp()
   static Future<void> load() async {
-    await dotenv.load(fileName: '.env');
+    if (!kIsWeb) {
+      await dotenv.load(fileName: '.env');
+    }
+    // Para web, as variáveis são carregadas do env.js via window.ENV_CONFIG
+  }
+
+  /// Obtém uma variável de ambiente
+  static String _getEnv(String key, String defaultValue) {
+    if (kIsWeb) {
+      try {
+        final config = envConfig;
+        if (config != null) {
+          final value = config.getProperty(key.toJS);
+          if (value != null && !value.isUndefined && !value.isNull) {
+            return value.dartify().toString();
+          }
+        }
+      } catch (e) {
+        _logger.w('Error reading ENV_CONFIG.$key: $e');
+      }
+      return defaultValue;
+    } else {
+      return dotenv.env[key] ?? defaultValue;
+    }
   }
 
   // ===================================
@@ -19,11 +52,11 @@ class EnvConfig {
 
   /// URL base da API backend
   static String get backendApiUrl =>
-      dotenv.env['BACKEND_API_URL'] ?? 'http://localhost:3000';
+      _getEnv('BACKEND_API_URL', 'http://localhost:3000');
 
   /// Timeout da API em milissegundos
   static int get backendApiTimeout =>
-      int.tryParse(dotenv.env['BACKEND_API_TIMEOUT'] ?? '30000') ?? 30000;
+      int.tryParse(_getEnv('BACKEND_API_TIMEOUT', '30000')) ?? 30000;
 
   // ===================================
   // Google Services
@@ -31,12 +64,12 @@ class EnvConfig {
 
   /// Google Maps API Key
   static String get googleMapsApiKey =>
-      dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+      _getEnv('GOOGLE_MAPS_API_KEY', '');
 
   /// Google OAuth Web Client ID
   static String get googleWebClientId =>
-      dotenv.env['GOOGLE_WEB_CLIENT_ID'] ??
-      '403775802042-dr9hvctbr6qfildd767us0o057m3iu3m.apps.googleusercontent.com';
+      _getEnv('GOOGLE_WEB_CLIENT_ID',
+          '403775802042-dr9hvctbr6qfildd767us0o057m3iu3m.apps.googleusercontent.com');
 
   // ===================================
   // Feature Flags
@@ -44,19 +77,19 @@ class EnvConfig {
 
   /// Login com Google habilitado
   static bool get enableGoogleLogin =>
-      dotenv.env['ENABLE_GOOGLE_LOGIN']?.toLowerCase() == 'true';
+      _getEnv('ENABLE_GOOGLE_LOGIN', 'false').toLowerCase() == 'true';
 
   /// Autenticação biométrica habilitada
   static bool get enableBiometricAuth =>
-      dotenv.env['ENABLE_BIOMETRIC_AUTH']?.toLowerCase() == 'true';
+      _getEnv('ENABLE_BIOMETRIC_AUTH', 'false').toLowerCase() == 'true';
 
   /// Serviços de localização habilitados
   static bool get enableLocationServices =>
-      dotenv.env['ENABLE_LOCATION_SERVICES']?.toLowerCase() == 'true';
+      _getEnv('ENABLE_LOCATION_SERVICES', 'false').toLowerCase() == 'true';
 
   /// Logs de debug habilitados
   static bool get enableDebugLogs =>
-      dotenv.env['ENABLE_DEBUG_LOGS']?.toLowerCase() == 'true';
+      _getEnv('ENABLE_DEBUG_LOGS', 'false').toLowerCase() == 'true';
 
   // ===================================
   // App Configuration
@@ -64,13 +97,13 @@ class EnvConfig {
 
   /// Nome do aplicativo
   static String get appName =>
-      dotenv.env['APP_NAME'] ?? 'Sistema de Cartão de Benefícios';
+      _getEnv('APP_NAME', 'Sistema de Cartão de Benefícios');
 
   /// Versão do aplicativo
-  static String get appVersion => dotenv.env['APP_VERSION'] ?? '1.0.0';
+  static String get appVersion => _getEnv('APP_VERSION', '1.0.0');
 
   /// Ambiente (development, staging, production)
-  static String get environment => dotenv.env['ENVIRONMENT'] ?? 'development';
+  static String get environment => _getEnv('ENVIRONMENT', 'development');
 
   /// Verifica se está em modo de desenvolvimento
   static bool get isDevelopment => environment == 'development';
@@ -95,15 +128,10 @@ class EnvConfig {
       missingVars.add('BACKEND_API_URL');
     }
 
-    // Adicionar mais validações conforme necessário
-    // if (googleMapsApiKey.isEmpty && enableLocationServices) {
-    //   missingVars.add('GOOGLE_MAPS_API_KEY');
-    // }
-
     if (missingVars.isNotEmpty) {
       throw Exception(
         'Variáveis de ambiente obrigatórias faltando: ${missingVars.join(', ')}\n'
-        'Verifique o arquivo .env',
+        'Verifique o arquivo .env ou window.ENV_CONFIG',
       );
     }
   }
@@ -115,6 +143,7 @@ class EnvConfig {
     if (!enableDebugLogs) return;
 
     _logger.d('=== Environment Configuration ===');
+    _logger.d('Platform: ${kIsWeb ? "Web" : "Native"}');
     _logger.d('Environment: $environment');
     _logger.d('App Name: $appName');
     _logger.d('App Version: $appVersion');
